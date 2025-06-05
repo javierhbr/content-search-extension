@@ -300,7 +300,7 @@ class PopupController {
 
         // Show loading state
         this.setButtonLoading(getGoldenButton, true);
-        this.showStatus('Searching for Golden Call...', 'info');
+        this.showStatus('🧹 Clearing previous highlights...', 'info');
 
         try {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -311,25 +311,35 @@ class PopupController {
                 return;
             }
             
-            // Try to send message, if it fails, inject content script and retry
+            // First, clear any existing highlights
             try {
                 await chrome.tabs.sendMessage(tab.id, {
-                    action: 'search',
-                    searchTerm: goldenId
+                    action: 'clear'
                 });
             } catch (connectionError) {
                 // Content script not loaded, inject it
                 this.showStatus('🔄 Loading search functionality...', 'info');
                 await this.injectContentScript(tab.id);
                 
-                // Wait a moment for script to load, then retry
+                // Wait a moment for script to load
                 await new Promise(resolve => setTimeout(resolve, 500));
                 
+                // Clear highlights after injection
                 await chrome.tabs.sendMessage(tab.id, {
-                    action: 'search',
-                    searchTerm: goldenId
+                    action: 'clear'
                 });
             }
+            
+            // Brief pause to show clearing status
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            // Now search for Golden Call
+            this.showStatus('🔍 Searching for Golden Call...', 'info');
+            
+            await chrome.tabs.sendMessage(tab.id, {
+                action: 'search',
+                searchTerm: goldenId
+            });
             
             this.showStatus(`✨ Golden Call "${goldenId}" found and highlighted!`, 'success');
             
@@ -358,7 +368,7 @@ class PopupController {
 
         // Show loading state
         this.setButtonLoading(searchButton, true);
-        this.showStatus('🔍 Searching and highlighting...', 'info');
+        this.showStatus('🧹 Clearing previous highlights...', 'info');
 
         try {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -369,25 +379,35 @@ class PopupController {
                 return;
             }
             
-            // Try to send message, if it fails, inject content script and retry
+            // First, clear any existing highlights
             try {
                 await chrome.tabs.sendMessage(tab.id, {
-                    action: 'search',
-                    searchTerm: searchTerm
+                    action: 'clear'
                 });
             } catch (connectionError) {
                 // Content script not loaded, inject it
                 this.showStatus('🔄 Loading search functionality...', 'info');
                 await this.injectContentScript(tab.id);
                 
-                // Wait a moment for script to load, then retry
+                // Wait a moment for script to load
                 await new Promise(resolve => setTimeout(resolve, 500));
                 
+                // Clear highlights after injection
                 await chrome.tabs.sendMessage(tab.id, {
-                    action: 'search',
-                    searchTerm: searchTerm
+                    action: 'clear'
                 });
             }
+            
+            // Brief pause to show clearing status
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            // Now perform the new search
+            this.showStatus('🔍 Searching and highlighting...', 'info');
+            
+            await chrome.tabs.sendMessage(tab.id, {
+                action: 'search',
+                searchTerm: searchTerm
+            });
             
             this.showStatus(`✨ Search completed for: "${searchTerm}"`, 'success');
             
@@ -546,11 +566,16 @@ class PopupController {
             
             this.filteredOptions = [...this.options];
             
-            // Re-render options if dropdown is open
-            const dropdownOptions = document.getElementById('dropdownOptions');
-            if (dropdownOptions.classList.contains('open')) {
-                this.renderOptions();
-            }
+            // Clear current input and reset selection
+            const searchInput = document.getElementById('searchInput');
+            searchInput.value = '';
+            this.selectedValue = '';
+            
+            // Force refresh the dropdown options immediately
+            this.refreshDropdownOptions();
+            
+            // Update search button state
+            this.updateSearchButton();
             
             this.updateConfigStatus('Custom config', 'loaded');
             this.showStatus(`✅ Configuration loaded successfully! ${config.length} search options available.`, 'success');
@@ -596,6 +621,42 @@ class PopupController {
         statusElement.className = `config-status ${type}`;
     }
 
+    refreshDropdownOptions() {
+        // Force refresh the dropdown with new options
+        const dropdownOptions = document.getElementById('dropdownOptions');
+        const searchInput = document.getElementById('searchInput');
+        
+        // Clear existing options
+        dropdownOptions.innerHTML = '';
+        
+        // Render new options
+        this.filteredOptions.forEach((option, index) => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option';
+            optionDiv.textContent = option.label;
+            optionDiv.setAttribute('role', 'option');
+            optionDiv.setAttribute('data-value', option.searchValue);
+            optionDiv.setAttribute('data-search', option.searchValue);
+            
+            optionDiv.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                this.selectOption(option);
+            });
+            
+            dropdownOptions.appendChild(optionDiv);
+        });
+        
+        // Show dropdown briefly to demonstrate the refresh
+        if (this.filteredOptions.length > 0) {
+            this.showDropdown();
+            
+            // Auto-hide after 2 seconds
+            setTimeout(() => {
+                this.hideDropdown();
+            }, 2000);
+        }
+    }
+
     async clearStoredConfig() {
         try {
             await chrome.storage.local.remove(['searchConfig']);
@@ -603,11 +664,16 @@ class PopupController {
             // Reset to default options
             await this.setupOptions();
             
-            // Re-render options if dropdown is open
-            const dropdownOptions = document.getElementById('dropdownOptions');
-            if (dropdownOptions.classList.contains('open')) {
-                this.renderOptions();
-            }
+            // Clear current input and reset selection
+            const searchInput = document.getElementById('searchInput');
+            searchInput.value = '';
+            this.selectedValue = '';
+            
+            // Force refresh the dropdown options immediately
+            this.refreshDropdownOptions();
+            
+            // Update search button state
+            this.updateSearchButton();
             
             this.showStatus('✅ Configuration reset to default options', 'success');
             console.log('Configuration cleared, reverted to defaults');
