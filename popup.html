@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Search Extension</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Content Search</h2>
+        
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-button active" data-tab="search">Search</button>
+            <button class="tab-button" data-tab="goldencall">GoldenCall</button>
+        </div>
+
+        <!-- Search Tab Content -->
+        <div class="tab-content active" id="searchTab">
+            <div class="search-container">
+                <label for="searchSelect">Search for:</label>
+                <div class="custom-select">
+                    <input type="text" id="searchInput" placeholder="Type to search or select from dropdown..." autocomplete="off">
+                    <div class="dropdown-arrow">▼</div>
+                    <div class="dropdown-options" id="dropdownOptions">
+                        <div class="option" data-value="envMode" data-search="envMode">envMode</div>
+                        <div class="option" data-value="Output field params parsed" data-search="Output field params parsed">featureFlags - Output field params parsed</div>
+                        <div class="option" data-value="New KVP log" data-search="New KVP log">keyValuePairs</div>
+                        <div class="option" data-value="Api Request builder" data-search="Api Request builder">ws-request</div>
+                        <div class="option" data-value="Output field params parsed" data-search="Output field params parsed">ws-response-fields</div>
+                        <div class="option" data-value="WsResponseDto" data-search="WsResponseDto">ws-response-WsResponseDto</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs Options Container -->
+            <div class="logs-container" id="logsContainer" style="display: none;">
+                <label>Log Search Options:</label>
+                <div class="logs-options">
+                    <div class="log-option" data-search="Error">Error</div>
+                    <div class="log-option" data-search="Warning">Warning</div>
+                    <div class="log-option" data-search="Info">Info</div>
+                    <div class="log-option" data-search="Debug">Debug</div>
+                    <div class="log-option" data-search="Exception">Exception</div>
+                    <div class="log-option" data-search="Failed">Failed</div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button id="searchButton" disabled>Search & Highlight</button>
+                <button id="clearButton">Clear Highlights</button>
+            </div>
+        </div>
+
+        <!-- GoldenCall Tab Content -->
+        <div class="tab-content" id="goldenCallTab">
+            <div class="goldencall-container">
+                <label for="goldenInput">Enter Golden Call ID:</label>
+                <div class="golden-input-group">
+                    <input type="text" id="goldenInput" placeholder="Enter Golden Call ID..." />
+                    <button id="getGoldenButton">Get Golden</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="status" class="status"></div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

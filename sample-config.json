@@ -1,0 +1,41 @@
+{
+  "envMode": [
+    "development",
+    "staging",
+    "production",
+    "testing",
+    "local"
+  ],
+  "Output field params parsed": [
+    "feature_flag_1",
+    "feature_flag_2",
+    "beta_features",
+    "experimental_ui",
+    "new_dashboard",
+    "advanced_search"
+  ],
+  "New KVP log": [
+    "user_id",
+    "session_token",
+    "api_key",
+    "auth_header",
+    "request_id",
+    "correlation_id"
+  ],
+  "Api Request builder": [
+    "GET /api/users",
+    "POST /api/login",
+    "PUT /api/users/{id}",
+    "DELETE /api/users/{id}",
+    "GET /api/search",
+    "POST /api/data/export"
+  ],
+  "WsResponseDto": [
+    "UserResponseDto",
+    "AuthResponseDto",
+    "SearchResponseDto",
+    "ErrorResponseDto",
+    "DataExportResponseDto",
+    "StatusResponseDto"
+  ]
+}
