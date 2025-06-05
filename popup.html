@@ -8,88 +8,98 @@
 </head>
 <body>
     <div class="container">
-        <h2>Content Search</h2>
-        
         <!-- Tab Navigation -->
-        <nav class="tab-navigation" role="tablist" aria-label="Main navigation">
+        <div class="tab-navigation">
             <button class="tab-button active" data-tab="search" role="tab" aria-selected="true" aria-controls="searchTab" id="search-tab">
-                <span>🔍</span> Search
+                Search
             </button>
             <button class="tab-button" data-tab="goldencall" role="tab" aria-selected="false" aria-controls="goldenCallTab" id="goldencall-tab">
-                <span>⭐</span> GoldenCall
+                GoldenCall
             </button>
-        </nav>
+        </div>
 
-        <!-- Search Tab Content -->
-        <div class="tab-content active" id="searchTab" role="tabpanel" aria-labelledby="search-tab">
-            <div class="search-container">
-                <label for="searchInput">Search for:</label>
-                <div class="custom-select">
-                    <input type="text" id="searchInput" placeholder="Type to search or select from dropdown..." 
-                           autocomplete="off" aria-expanded="false" aria-haspopup="listbox" role="combobox">
-                    <div class="dropdown-arrow" aria-hidden="true">▼</div>
-                    <div class="dropdown-options" id="dropdownOptions" role="listbox" aria-label="Search options">
-                        <div class="option" data-value="envMode" data-search="envMode" role="option">
-                            <span class="option-icon">🌍</span> envMode
-                        </div>
-                        <div class="option" data-value="Output field params parsed" data-search="Output field params parsed" role="option">
-                            <span class="option-icon">🚩</span> featureFlags - Output field params parsed
-                        </div>
-                        <div class="option" data-value="New KVP log" data-search="New KVP log" role="option">
-                            <span class="option-icon">🔑</span> keyValuePairs
-                        </div>
-                        <div class="option" data-value="Api Request builder" data-search="Api Request builder" role="option">
-                            <span class="option-icon">🔗</span> ws-request
-                        </div>
-                        <div class="option" data-value="Output field params parsed" data-search="Output field params parsed" role="option">
-                            <span class="option-icon">📤</span> ws-response-fields
-                        </div>
-                        <div class="option" data-value="WsResponseDto" data-search="WsResponseDto" role="option">
-                            <span class="option-icon">📋</span> ws-response-WsResponseDto
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Search Tab -->
+            <div id="searchTab" class="tab-pane active" role="tabpanel" aria-labelledby="search-tab">
+                <div class="page-header">
+                    <h2>Search Configuration</h2>
+                </div>
+                
+                <div class="search-container">
+                    <label for="searchInput">Search for:</label>
+                    <div class="custom-select">
+                        <input type="text" id="searchInput" placeholder="Type to search or select from dropdown..." 
+                               autocomplete="off" aria-expanded="false" aria-haspopup="listbox" role="combobox">
+                        <div class="dropdown-arrow" aria-hidden="true">▼</div>
+                        <div class="dropdown-options" id="dropdownOptions" role="listbox" aria-label="Search options">
+                            <div class="option" data-value="envMode" data-search="envMode" role="option">
+                                envMode
+                            </div>
+                            <div class="option" data-value="Output field params parsed" data-search="Output field params parsed" role="option">
+                                featureFlags - Output field params parsed
+                            </div>
+                            <div class="option" data-value="New KVP log" data-search="New KVP log" role="option">
+                                keyValuePairs
+                            </div>
+                            <div class="option" data-value="Api Request builder" data-search="Api Request builder" role="option">
+                                ws-request
+                            </div>
+                            <div class="option" data-value="Output field params parsed" data-search="Output field params parsed" role="option">
+                                ws-response-fields
+                            </div>
+                            <div class="option" data-value="WsResponseDto" data-search="WsResponseDto" role="option">
+                                ws-response-WsResponseDto
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Logs Options Container -->
-            <div class="logs-container" id="logsContainer" style="display: none;">
-                <label>Log Search Options:</label>
-                <div class="logs-options">
-                    <div class="log-option" data-search="Error">Error</div>
-                    <div class="log-option" data-search="Warning">Warning</div>
-                    <div class="log-option" data-search="Info">Info</div>
-                    <div class="log-option" data-search="Debug">Debug</div>
-                    <div class="log-option" data-search="Exception">Exception</div>
-                    <div class="log-option" data-search="Failed">Failed</div>
+                <!-- Logs Options Container -->
+                <div class="logs-container" id="logsContainer" style="display: none;">
+                    <label>Log Search Options:</label>
+                    <div class="logs-options">
+                        <div class="log-option" data-search="Error">Error</div>
+                        <div class="log-option" data-search="Warning">Warning</div>
+                        <div class="log-option" data-search="Info">Info</div>
+                        <div class="log-option" data-search="Debug">Debug</div>
+                        <div class="log-option" data-search="Exception">Exception</div>
+                        <div class="log-option" data-search="Failed">Failed</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="button-group">
-                <button id="searchButton" disabled aria-describedby="search-help">
-                    <span class="button-icon">🔍</span> Search & Highlight
-                </button>
-                <button id="clearButton" aria-describedby="clear-help">
-                    <span class="button-icon">✨</span> Clear Highlights
-                </button>
-            </div>
-            <div class="button-help">
-                <small id="search-help" class="help-text">Find and highlight text on the current page</small>
-                <small id="clear-help" class="help-text">Remove all highlights from the page</small>
-            </div>
-        </div>
-
-        <!-- GoldenCall Tab Content -->
-        <div class="tab-content" id="goldenCallTab" role="tabpanel" aria-labelledby="goldencall-tab">
-            <div class="goldencall-container">
-                <label for="goldenInput">Enter Golden Call ID:</label>
-                <div class="golden-input-group">
-                    <input type="text" id="goldenInput" placeholder="Enter Golden Call ID..." 
-                           aria-describedby="golden-help" />
-                    <button id="getGoldenButton" aria-describedby="golden-help">
-                        <span class="button-icon">⭐</span> Get Golden
+                <div class="button-group">
+                    <button id="searchButton" disabled aria-describedby="search-help">
+                        Search & Highlight
+                    </button>
+                    <button id="clearButton" aria-describedby="clear-help">
+                        Clear Highlights
                     </button>
                 </div>
-                <small id="golden-help" class="help-text">Search for a specific Golden Call ID on the current page</small>
+                <div class="button-help">
+                    <small id="search-help" class="help-text">Find and highlight text on the current page</small>
+                    <small id="clear-help" class="help-text">Remove all highlights from the page</small>
+                </div>
+            </div>
+
+            <!-- GoldenCall Tab -->
+            <div id="goldenCallTab" class="tab-pane" role="tabpanel" aria-labelledby="goldencall-tab">
+                <div class="page-header">
+                    <h2>GoldenCall Service</h2>
+                    <p>Enter your query to get the golden response</p>
+                </div>
+                
+                <div class="goldencall-container">
+                    <label for="goldenInput">Enter Golden Call ID:</label>
+                    <div class="golden-input-group">
+                        <input type="text" id="goldenInput" placeholder="Enter your golden call query..." 
+                               aria-describedby="golden-help" />
+                        <button id="getGoldenButton" aria-describedby="golden-help">
+                            Get Golden
+                        </button>
+                    </div>
+                    <small id="golden-help" class="help-text">Search for a specific Golden Call ID on the current page</small>
+                </div>
             </div>
         </div>
 

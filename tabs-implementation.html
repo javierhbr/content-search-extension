@@ -242,6 +242,88 @@
             box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
         }
 
+        /* Searchable dropdown styles */
+        .searchable-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .dropdown-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .dropdown-input:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        .dropdown-arrow {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-arrow.open {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .dropdown-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 1px solid #ced4da;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown-options.open {
+            display: block;
+        }
+
+        .dropdown-option {
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .dropdown-option:hover {
+            background-color: #f8f9fa;
+        }
+
+        .dropdown-option.selected {
+            background-color: #e3f2fd;
+            color: #0066cc;
+        }
+
+        .dropdown-option.hidden {
+            display: none;
+        }
+
+        .no-results {
+            padding: 10px;
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+
         .search-button {
             padding: 10px 24px;
             background-color: #28a745;
@@ -383,20 +465,43 @@
                         <div class="dropdown-container">
                             <div class="dropdown-group">
                                 <label for="mainCategory">Main Category</label>
-                                <select id="mainCategory" onchange="handleMainCategoryChange()">
-                                    <option value="">Select Category</option>
-                                    <option value="environmentMode">Environment Mode</option>
-                                    <option value="featureFlags">Feature Flags</option>
-                                    <option value="keyValuePairs">Key-Value Pairs</option>
-                                    <option value="webService">Web Service</option>
-                                </select>
+                                <div class="searchable-dropdown">
+                                    <input 
+                                        type="text" 
+                                        id="mainCategoryInput" 
+                                        class="dropdown-input" 
+                                        placeholder="Select or search category..."
+                                        onclick="toggleDropdown('main')"
+                                        onkeyup="filterOptions('main')"
+                                        readonly
+                                    >
+                                    <span class="dropdown-arrow" id="mainArrow">▼</span>
+                                    <div id="mainDropdownOptions" class="dropdown-options">
+                                        <div class="dropdown-option" data-value="environmentMode" onclick="selectOption('main', 'environmentMode', 'Environment Mode')">Environment Mode</div>
+                                        <div class="dropdown-option" data-value="featureFlags" onclick="selectOption('main', 'featureFlags', 'Feature Flags')">Feature Flags</div>
+                                        <div class="dropdown-option" data-value="keyValuePairs" onclick="selectOption('main', 'keyValuePairs', 'Key-Value Pairs')">Key-Value Pairs</div>
+                                        <div class="dropdown-option" data-value="webService" onclick="selectOption('main', 'webService', 'Web Service')">Web Service</div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="dropdown-group" id="subCategoryGroup" style="display: none;">
                                 <label for="subCategory">Sub Category</label>
-                                <select id="subCategory" onchange="handleSubCategoryChange()">
-                                    <option value="">Select Sub-Category</option>
-                                </select>
+                                <div class="searchable-dropdown">
+                                    <input 
+                                        type="text" 
+                                        id="subCategoryInput" 
+                                        class="dropdown-input" 
+                                        placeholder="Select or search sub-category..."
+                                        onclick="toggleDropdown('sub')"
+                                        onkeyup="filterOptions('sub')"
+                                        readonly
+                                    >
+                                    <span class="dropdown-arrow" id="subArrow">▼</span>
+                                    <div id="subDropdownOptions" class="dropdown-options">
+                                        <!-- Sub options will be populated dynamically -->
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -508,60 +613,183 @@
         }
 
         // Search dropdown functionality
+        let selectedMainValue = '';
+        let selectedSubValue = '';
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.searchable-dropdown')) {
+                closeAllDropdowns();
+            }
+        });
+
+        function toggleDropdown(type) {
+            const dropdownId = type === 'main' ? 'mainDropdownOptions' : 'subDropdownOptions';
+            const arrowId = type === 'main' ? 'mainArrow' : 'subArrow';
+            const inputId = type === 'main' ? 'mainCategoryInput' : 'subCategoryInput';
+            
+            const dropdown = document.getElementById(dropdownId);
+            const arrow = document.getElementById(arrowId);
+            const input = document.getElementById(inputId);
+            
+            // Close other dropdown
+            if (type === 'main') {
+                document.getElementById('subDropdownOptions').classList.remove('open');
+                document.getElementById('subArrow').classList.remove('open');
+            } else {
+                document.getElementById('mainDropdownOptions').classList.remove('open');
+                document.getElementById('mainArrow').classList.remove('open');
+            }
+            
+            dropdown.classList.toggle('open');
+            arrow.classList.toggle('open');
+            
+            // Make input editable when dropdown is open
+            if (dropdown.classList.contains('open')) {
+                input.removeAttribute('readonly');
+                input.focus();
+                input.select();
+            } else {
+                input.setAttribute('readonly', true);
+            }
+        }
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('.dropdown-options').forEach(dropdown => {
+                dropdown.classList.remove('open');
+            });
+            document.querySelectorAll('.dropdown-arrow').forEach(arrow => {
+                arrow.classList.remove('open');
+            });
+            document.querySelectorAll('.dropdown-input').forEach(input => {
+                input.setAttribute('readonly', true);
+            });
+        }
+
+        function filterOptions(type) {
+            const inputId = type === 'main' ? 'mainCategoryInput' : 'subCategoryInput';
+            const dropdownId = type === 'main' ? 'mainDropdownOptions' : 'subDropdownOptions';
+            
+            const input = document.getElementById(inputId);
+            const filter = input.value.toLowerCase();
+            const dropdown = document.getElementById(dropdownId);
+            const options = dropdown.querySelectorAll('.dropdown-option');
+            
+            let hasVisibleOptions = false;
+            
+            options.forEach(option => {
+                const text = option.textContent.toLowerCase();
+                if (text.includes(filter)) {
+                    option.classList.remove('hidden');
+                    hasVisibleOptions = true;
+                } else {
+                    option.classList.add('hidden');
+                }
+            });
+            
+            // Show no results message if needed
+            let noResultsDiv = dropdown.querySelector('.no-results');
+            if (!hasVisibleOptions) {
+                if (!noResultsDiv) {
+                    noResultsDiv = document.createElement('div');
+                    noResultsDiv.className = 'no-results';
+                    noResultsDiv.textContent = 'No results found';
+                    dropdown.appendChild(noResultsDiv);
+                }
+                noResultsDiv.style.display = 'block';
+            } else if (noResultsDiv) {
+                noResultsDiv.style.display = 'none';
+            }
+        }
+
+        function selectOption(type, value, text) {
+            const inputId = type === 'main' ? 'mainCategoryInput' : 'subCategoryInput';
+            const dropdownId = type === 'main' ? 'mainDropdownOptions' : 'subDropdownOptions';
+            const arrowId = type === 'main' ? 'mainArrow' : 'subArrow';
+            
+            const input = document.getElementById(inputId);
+            const dropdown = document.getElementById(dropdownId);
+            const arrow = document.getElementById(arrowId);
+            
+            // Set the input value
+            input.value = text;
+            input.setAttribute('readonly', true);
+            
+            // Update selected state
+            dropdown.querySelectorAll('.dropdown-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            
+            // Close dropdown
+            dropdown.classList.remove('open');
+            arrow.classList.remove('open');
+            
+            if (type === 'main') {
+                selectedMainValue = value;
+                handleMainCategoryChange();
+            } else {
+                selectedSubValue = value;
+                handleSubCategoryChange();
+            }
+        }
+
         function handleMainCategoryChange() {
-            const mainSelect = document.getElementById('mainCategory');
             const subCategoryGroup = document.getElementById('subCategoryGroup');
-            const subSelect = document.getElementById('subCategory');
+            const subDropdownOptions = document.getElementById('subDropdownOptions');
+            const subInput = document.getElementById('subCategoryInput');
             const valueDisplay = document.getElementById('searchValueDisplay');
             
-            const selectedValue = mainSelect.value;
-            
             // Reset sub-category
-            subSelect.innerHTML = '<option value="">Select Sub-Category</option>';
+            subInput.value = '';
+            selectedSubValue = '';
+            subDropdownOptions.innerHTML = '';
             subCategoryGroup.style.display = 'none';
             valueDisplay.style.display = 'none';
             
-            if (selectedValue === 'webService') {
+            if (selectedMainValue === 'webService') {
                 // Show sub-category dropdown
                 subCategoryGroup.style.display = 'block';
                 
+                // Populate sub-category options
                 Object.keys(config.webService).forEach(key => {
-                    const option = document.createElement('option');
-                    option.value = key;
-                    option.textContent = key.charAt(0).toUpperCase() + key.slice(1);
-                    subSelect.appendChild(option);
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'dropdown-option';
+                    optionDiv.setAttribute('data-value', key);
+                    optionDiv.textContent = key.charAt(0).toUpperCase() + key.slice(1);
+                    optionDiv.onclick = function() {
+                        selectOption('sub', key, this.textContent);
+                    };
+                    subDropdownOptions.appendChild(optionDiv);
                 });
             }
         }
 
         function handleSubCategoryChange() {
             // Just update the selection, don't display value yet
-            const subSelect = document.getElementById('subCategory');
-            if (!subSelect.value) {
+            if (!selectedSubValue) {
                 document.getElementById('searchValueDisplay').style.display = 'none';
             }
         }
 
         function performSearch() {
-            const mainSelect = document.getElementById('mainCategory');
-            const subSelect = document.getElementById('subCategory');
             const valueDisplay = document.getElementById('searchValueDisplay');
             
-            if (!mainSelect.value) {
+            if (!selectedMainValue) {
                 alert('Please select a category to search');
                 return;
             }
 
-            if (mainSelect.value === 'webService' && !subSelect.value) {
+            if (selectedMainValue === 'webService' && !selectedSubValue) {
                 alert('Please select a sub-category');
                 return;
             }
 
             let value;
-            if (mainSelect.value === 'webService') {
-                value = config[mainSelect.value][subSelect.value];
+            if (selectedMainValue === 'webService') {
+                value = config[selectedMainValue][selectedSubValue];
             } else {
-                value = config[mainSelect.value];
+                value = config[selectedMainValue];
             }
 
             displaySearchValue(value);

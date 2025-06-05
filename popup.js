@@ -208,7 +208,7 @@ class PopupController {
         activeTabButton.setAttribute('aria-selected', 'true');
         
         // Update tab content visibility
-        document.querySelectorAll('.tab-content').forEach(content => {
+        document.querySelectorAll('.tab-pane').forEach(content => {
             content.classList.remove('active');
         });
         
