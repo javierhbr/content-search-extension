@@ -4,7 +4,7 @@ class PopupController {
         this.filteredOptions = [];
         this.highlightedIndex = -1;
         this.currentMode = 'normal';
-        this.activeTab = 'search';
+        this.activeTab = 'goldencall';
         // init() will be called manually after construction
     }
 
