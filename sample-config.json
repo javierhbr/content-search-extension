@@ -1,41 +1,9 @@
-{
-  "envMode": [
-    "development",
-    "staging",
-    "production",
-    "testing",
-    "local"
-  ],
-  "Output field params parsed": [
-    "feature_flag_1",
-    "feature_flag_2",
-    "beta_features",
-    "experimental_ui",
-    "new_dashboard",
-    "advanced_search"
-  ],
-  "New KVP log": [
-    "user_id",
-    "session_token",
-    "api_key",
-    "auth_header",
-    "request_id",
-    "correlation_id"
-  ],
-  "Api Request builder": [
-    "GET /api/users",
-    "POST /api/login",
-    "PUT /api/users/{id}",
-    "DELETE /api/users/{id}",
-    "GET /api/search",
-    "POST /api/data/export"
-  ],
-  "WsResponseDto": [
-    "UserResponseDto",
-    "AuthResponseDto",
-    "SearchResponseDto",
-    "ErrorResponseDto",
-    "DataExportResponseDto",
-    "StatusResponseDto"
-  ]
-}
+[
+  { "label": "newLabel", "searchValue": "newSearchValue" },
+  { "label": "envMode", "searchValue": "envMode" },
+  { "label": "featureFlags - Output field params parsed", "searchValue": "Output field params parsed" },
+  { "label": "keyValuePairs", "searchValue": "New KVP log" },
+  { "label": "ws-request", "searchValue": "Api Request builder" },
+  { "label": "ws-response-fields", "searchValue": "Output field params parsed" },
+  { "label": "ws-response-WsResponseDto", "searchValue": "WsResponseDto" }
+]

@@ -5,17 +5,19 @@ class PopupController {
         this.highlightedIndex = -1;
         this.currentMode = 'normal';
         this.activeTab = 'search';
-        this.init();
+        // init() will be called manually after construction
     }
 
-    init() {
-        this.setupOptions();
+    async init() {
+        await this.setupOptions();
         this.bindEvents();
         this.updateSearchButton();
+        this.updateConfigStatus();
     }
 
-    setupOptions() {
-        this.options = [
+    async setupOptions() {
+        // Default options as fallback
+        const defaultOptions = [
             { label: 'envMode', searchValue: 'envMode' },
             { label: 'featureFlags - Output field params parsed', searchValue: 'Output field params parsed' },
             { label: 'keyValuePairs', searchValue: 'New KVP log' },
@@ -23,6 +25,32 @@ class PopupController {
             { label: 'ws-response-fields', searchValue: 'Output field params parsed' },
             { label: 'ws-response-WsResponseDto', searchValue: 'WsResponseDto' }
         ];
+
+        try {
+            // Try to load options from local storage first
+            const result = await chrome.storage.local.get(['searchConfig']);
+            
+            if (result.searchConfig && Array.isArray(result.searchConfig) && result.searchConfig.length > 0) {
+                // Use stored configuration
+                this.options = result.searchConfig.map(item => ({
+                    label: item.label,
+                    searchValue: item.searchValue
+                }));
+                this.updateConfigStatus('Custom config', 'loaded');
+                console.log('Loaded custom configuration from storage:', this.options.length, 'options');
+            } else {
+                // Use default options
+                this.options = defaultOptions;
+                this.updateConfigStatus('Default config', '');
+                console.log('Using default configuration:', this.options.length, 'options');
+            }
+        } catch (error) {
+            console.error('Error loading configuration from storage:', error);
+            // Fall back to default options
+            this.options = defaultOptions;
+            this.updateConfigStatus('Default config', '');
+        }
+
         this.filteredOptions = [...this.options];
     }
 
@@ -44,6 +72,16 @@ class PopupController {
         // Golden Call events
         document.getElementById('getGoldenButton').addEventListener('click', () => this.getGoldenCall());
         document.getElementById('goldenInput').addEventListener('input', () => this.updateGoldenButton());
+        
+        // Configuration file events
+        document.getElementById('loadConfigButton').addEventListener('click', () => this.loadConfigFile());
+        document.getElementById('configFileInput').addEventListener('change', (e) => this.handleConfigFile(e));
+        
+        // Add right-click context menu to clear configuration
+        document.getElementById('loadConfigButton').addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            this.clearStoredConfig();
+        });
         
         // Tab events
         this.bindTabEvents();
@@ -475,8 +513,112 @@ class PopupController {
             throw new Error('Failed to load search functionality on this page');
         }
     }
+
+    // Configuration management methods
+    loadConfigFile() {
+        const fileInput = document.getElementById('configFileInput');
+        fileInput.click();
+    }
+
+    async handleConfigFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        this.updateConfigStatus('Loading...', 'loading');
+
+        try {
+            const text = await file.text();
+            const config = JSON.parse(text);
+            
+            // Validate configuration format
+            if (!this.validateConfig(config)) {
+                throw new Error('Invalid configuration format. Expected array of objects with "label" and "searchValue" properties.');
+            }
+
+            // Save the entire JSON content to local storage
+            await this.saveConfig(config);
+            
+            // Replace current options with loaded configuration
+            this.options = config.map(item => ({
+                label: item.label,
+                searchValue: item.searchValue
+            }));
+            
+            this.filteredOptions = [...this.options];
+            
+            // Re-render options if dropdown is open
+            const dropdownOptions = document.getElementById('dropdownOptions');
+            if (dropdownOptions.classList.contains('open')) {
+                this.renderOptions();
+            }
+            
+            this.updateConfigStatus('Custom config', 'loaded');
+            this.showStatus(`✅ Configuration loaded successfully! ${config.length} search options available.`, 'success');
+            
+            console.log('Configuration loaded and saved:', config.length, 'options');
+        } catch (error) {
+            console.error('Error loading configuration:', error);
+            this.updateConfigStatus('Load failed', 'error');
+            this.showStatus('❌ Failed to load configuration: ' + error.message, 'error');
+        }
+
+        // Clear the file input
+        event.target.value = '';
+    }
+
+    validateConfig(config) {
+        // Basic validation - should be an array of objects with label and searchValue
+        if (!Array.isArray(config)) {
+            return false;
+        }
+
+        return config.every(item => 
+            typeof item === 'object' && 
+            typeof item.label === 'string' && 
+            typeof item.searchValue === 'string'
+        );
+    }
+
+    async saveConfig(config) {
+        try {
+            await chrome.storage.local.set({ searchConfig: config });
+        } catch (error) {
+            console.error('Error saving configuration:', error);
+            throw new Error('Failed to save configuration to storage');
+        }
+    }
+
+
+
+    updateConfigStatus(message, type = '') {
+        const statusElement = document.getElementById('configStatus');
+        statusElement.textContent = message;
+        statusElement.className = `config-status ${type}`;
+    }
+
+    async clearStoredConfig() {
+        try {
+            await chrome.storage.local.remove(['searchConfig']);
+            
+            // Reset to default options
+            await this.setupOptions();
+            
+            // Re-render options if dropdown is open
+            const dropdownOptions = document.getElementById('dropdownOptions');
+            if (dropdownOptions.classList.contains('open')) {
+                this.renderOptions();
+            }
+            
+            this.showStatus('✅ Configuration reset to default options', 'success');
+            console.log('Configuration cleared, reverted to defaults');
+        } catch (error) {
+            console.error('Error clearing configuration:', error);
+            this.showStatus('❌ Failed to clear configuration', 'error');
+        }
+    }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    new PopupController();
+document.addEventListener('DOMContentLoaded', async () => {
+    const controller = new PopupController();
+    await controller.init();
 });

@@ -1,22 +1,22 @@
 :root {
-    --primary-color: #0066cc;
-    --primary-hover: #0052a3;
-    --secondary-color: #28a745;
-    --secondary-hover: #218838;
-    --accent-color: #f59e0b;
-    --accent-hover: #d97706;
-    --danger-color: #ef4444;
-    --danger-hover: #dc2626;
-    --background: #ffffff;
-    --surface: #f8f9fa;
-    --border: #ced4da;
-    --border-light: #e9ecef;
-    --text-primary: #333333;
-    --text-secondary: #495057;
-    --text-muted: #6c757d;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 4px 12px rgba(0, 102, 204, 0.2);
+    --primary-color: #4a5568;
+    --primary-hover: #2d3748;
+    --secondary-color: #68d391;
+    --secondary-hover: #48bb78;
+    --accent-color: #ed8936;
+    --accent-hover: #dd6b20;
+    --danger-color: #e53e3e;
+    --danger-hover: #c53030;
+    --background: #f7fafc;
+    --surface: #edf2f7;
+    --border: #cbd5e0;
+    --border-light: #e2e8f0;
+    --text-primary: #2d3748;
+    --text-secondary: #4a5568;
+    --text-muted: #718096;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 4px 12px rgba(74, 85, 104, 0.15);
     --radius-sm: 4px;
     --radius-md: 6px;
     --radius-lg: 8px;
@@ -32,7 +32,7 @@ body {
     margin: 0;
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background-color: #f5f5f5;
+    background-color: #e2e8f0;
     color: var(--text-primary);
     line-height: 1.5;
 }
@@ -41,6 +41,7 @@ body {
     background: var(--background);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-light);
     overflow: hidden;
     margin: 0;
     padding: 0;
@@ -69,14 +70,52 @@ h2 {
 .tab-navigation {
     display: flex;
     background-color: var(--surface);
-    border-bottom: 2px solid var(--border-light);
+    border-bottom: 1px solid var(--border);
     margin: 0;
     padding: 0;
+    align-items: center;
+}
+
+.logo-area {
+    flex: 0 0 20%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 8px;
+    border-right: 1px solid var(--border);
+}
+
+.logo-placeholder {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.logo-placeholder:hover {
+    background: var(--primary-color);
+    color: var(--background);
+    box-shadow: var(--shadow-md);
+    transform: scale(1.05);
+}
+
+.tabs-area {
+    flex: 1;
+    display: flex;
 }
 
 .tab-button {
     flex: 1;
-    padding: 16px 24px;
+    padding: 16px 20px;
     background: none;
     border: none;
     cursor: pointer;
@@ -96,12 +135,13 @@ h2 {
 .tab-button.active {
     color: var(--primary-color);
     background-color: var(--background);
+    font-weight: 600;
 }
 
 .tab-button.active::after {
     content: '';
     position: absolute;
-    bottom: -2px;
+    bottom: -1px;
     left: 0;
     right: 0;
     height: 2px;
@@ -155,12 +195,67 @@ h2 {
     margin-bottom: 24px;
 }
 
-.search-container label {
-    display: block;
+.search-header-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 8px;
+}
+
+.search-container label {
     font-weight: 600;
     color: var(--text-primary);
     font-size: 14px;
+    margin: 0;
+}
+
+.config-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon-button {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 6px 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    box-shadow: var(--shadow-sm);
+}
+
+.icon-button:hover {
+    background: var(--surface);
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-md);
+}
+
+.icon-button:active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.config-status {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    min-width: 80px;
+    text-align: right;
+}
+
+.config-status.loaded {
+    color: var(--secondary-color);
+}
+
+.config-status.error {
+    color: var(--danger-color);
 }
 
 .custom-select {
@@ -174,11 +269,12 @@ h2 {
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     font-size: 14px;
-    background: var(--background);
+    background: #ffffff;
     color: var(--text-primary);
     transition: var(--transition);
     outline: none;
     cursor: pointer;
+    box-shadow: var(--shadow-sm);
 }
 
 #searchInput::placeholder {
@@ -188,7 +284,7 @@ h2 {
 #searchInput:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    box-shadow: 0 0 0 3px rgba(74, 85, 104, 0.15);
 }
 
 .dropdown-arrow {
@@ -210,7 +306,7 @@ h2 {
     top: 100%;
     left: 0;
     right: 0;
-    background-color: var(--background);
+    background-color: #ffffff;
     border: 1px solid var(--border);
     border-top: none;
     border-radius: 0 0 var(--radius-sm) var(--radius-sm);
@@ -218,7 +314,7 @@ h2 {
     overflow-y: auto;
     z-index: 1000;
     display: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-md);
 }
 
 .dropdown-options.open {
@@ -240,7 +336,7 @@ h2 {
 
 .option.highlighted,
 .option.selected {
-    background-color: #e3f2fd;
+    background-color: var(--surface);
     color: var(--primary-color);
 }
 
@@ -325,13 +421,14 @@ h2 {
 #goldenInput {
     flex: 1;
     padding: 12px 16px;
-    border: 2px solid var(--border-light);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     font-size: 16px;
-    background: var(--background);
+    background: #ffffff;
     color: var(--text-primary);
     transition: var(--transition);
     outline: none;
+    box-shadow: var(--shadow-sm);
 }
 
 #goldenInput::placeholder {
@@ -342,7 +439,7 @@ h2 {
 #goldenInput:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    box-shadow: 0 0 0 3px rgba(74, 85, 104, 0.15);
 }
 
 #getGoldenButton {
@@ -362,7 +459,7 @@ h2 {
 #getGoldenButton:hover {
     background-color: var(--primary-hover);
     transform: translateY(-1px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-md);
 }
 
 #getGoldenButton:active {
@@ -473,23 +570,23 @@ h2 {
 }
 
 .status.success {
-    background-color: #d1fae5;
-    color: #065f46;
-    border-color: #10b981;
+    background-color: #f0fff4;
+    color: #22543d;
+    border-color: var(--secondary-color);
     animation: statusSlideIn 0.3s ease-out;
 }
 
 .status.error {
-    background-color: #fee2e2;
-    color: #991b1b;
-    border-color: #ef4444;
+    background-color: #fed7d7;
+    color: #742a2a;
+    border-color: var(--danger-color);
     animation: statusSlideIn 0.3s ease-out;
 }
 
 .status.info {
-    background-color: #dbeafe;
-    color: #1e40af;
-    border-color: #3b82f6;
+    background-color: #ebf4ff;
+    color: #2a4365;
+    border-color: var(--primary-color);
     animation: statusSlideIn 0.3s ease-out;
 }
 
@@ -557,6 +654,38 @@ h2 {
     h2 {
         font-size: 20px;
     }
+
+    .search-header-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .config-controls {
+        align-self: flex-end;
+    }
+
+    .config-status {
+        min-width: 60px;
+        font-size: 11px;
+    }
+
+    /* Logo area responsive */
+    .logo-area {
+        flex: 0 0 15%;
+        padding: 12px 4px;
+    }
+
+    .logo-placeholder {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+    }
+
+    .tab-button {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
 }
 
 /* High Contrast Mode Support */
@@ -585,16 +714,174 @@ h2 {
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
     :root {
+        --primary-color: #60a5fa;
+        --primary-hover: #3b82f6;
+        --secondary-color: #34d399;
+        --secondary-hover: #10b981;
+        --accent-color: #fbbf24;
+        --accent-hover: #f59e0b;
+        --danger-color: #f87171;
+        --danger-hover: #ef4444;
         --background: #1f2937;
         --surface: #374151;
         --border: #4b5563;
-        --border-light: #374151;
+        --border-light: #6b7280;
         --text-primary: #f9fafb;
         --text-secondary: #d1d5db;
         --text-muted: #9ca3af;
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+        --shadow-lg: 0 4px 12px rgba(96, 165, 250, 0.3);
     }
 
     body {
         background-color: #111827;
+    }
+
+    .container {
+        border: 1px solid var(--border);
+    }
+
+    /* Fix input backgrounds in dark mode */
+    #searchInput,
+    #goldenInput {
+        background: var(--surface) !important;
+        color: var(--text-primary);
+        border-color: var(--border);
+    }
+
+    #searchInput:focus,
+    #goldenInput:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+    }
+
+    /* Fix dropdown background in dark mode */
+    .dropdown-options {
+        background-color: var(--surface) !important;
+        border-color: var(--border);
+    }
+
+    .option:hover {
+        background-color: var(--border) !important;
+    }
+
+    .option.highlighted,
+    .option.selected {
+        background-color: var(--primary-color) !important;
+        color: var(--background) !important;
+    }
+
+    /* Fix icon button in dark mode */
+    .icon-button {
+        background: var(--surface) !important;
+        border-color: var(--border);
+        color: var(--text-primary);
+    }
+
+    .icon-button:hover {
+        background: var(--border) !important;
+        border-color: var(--primary-color);
+    }
+
+    /* Improve active tab visibility in dark mode */
+    .tab-button.active {
+        background-color: var(--background) !important;
+        color: var(--primary-color) !important;
+        font-weight: 600;
+        border-bottom: 2px solid var(--primary-color);
+    }
+
+    .tab-button.active::after {
+        background-color: var(--primary-color);
+        height: 3px;
+    }
+
+    .tab-button:hover:not(.active) {
+        background-color: var(--border);
+        color: var(--text-primary);
+    }
+
+    /* Fix status colors in dark mode */
+    .status.success {
+        background-color: rgba(52, 211, 153, 0.1);
+        color: var(--secondary-color);
+        border-color: var(--secondary-color);
+    }
+
+    .status.error {
+        background-color: rgba(248, 113, 113, 0.1);
+        color: var(--danger-color);
+        border-color: var(--danger-color);
+    }
+
+    .status.info {
+        background-color: rgba(96, 165, 250, 0.1);
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    /* Fix config status colors */
+    .config-status.loaded {
+        color: var(--secondary-color);
+    }
+
+    .config-status.error {
+        color: var(--danger-color);
+    }
+
+    /* Fix button styling in dark mode */
+    #searchButton {
+        background-color: var(--secondary-color);
+        color: var(--background);
+    }
+
+    #searchButton:hover:not(:disabled) {
+        background-color: var(--secondary-hover);
+    }
+
+    #searchButton:disabled {
+        background-color: var(--border);
+        color: var(--text-muted);
+    }
+
+    #clearButton {
+        background-color: var(--danger-color);
+        color: var(--background);
+    }
+
+    #clearButton:hover {
+        background-color: var(--danger-hover);
+    }
+
+    #getGoldenButton {
+        background-color: var(--primary-color);
+        color: var(--background);
+    }
+
+    #getGoldenButton:hover {
+        background-color: var(--primary-hover);
+    }
+
+    /* Fix placeholder text in dark mode */
+    #searchInput::placeholder,
+    #goldenInput::placeholder {
+        color: var(--text-muted);
+    }
+
+    /* Logo area in dark mode */
+    .logo-area {
+        border-right-color: var(--border);
+    }
+
+    .logo-placeholder {
+        background: var(--surface);
+        border-color: var(--border);
+        color: var(--primary-color);
+    }
+
+    .logo-placeholder:hover {
+        background: var(--primary-color);
+        color: var(--background);
     }
 }
