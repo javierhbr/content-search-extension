@@ -82,7 +82,6 @@ h2 {
     align-items: center;
     justify-content: center;
     padding: 16px 8px;
-    border-right: 1px solid var(--border);
 }
 
 .logo-placeholder {
@@ -111,41 +110,45 @@ h2 {
 .tabs-area {
     flex: 1;
     display: flex;
+    gap: 4px;
+    padding: 8px;
 }
 
 .tab-button {
     flex: 1;
-    padding: 16px 20px;
-    background: none;
-    border: none;
+    padding: 12px 16px;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--text-muted);
     transition: var(--transition);
     position: relative;
+    box-shadow: var(--shadow-sm);
 }
 
 
 .tab-button:hover {
     color: var(--text-secondary);
-    background-color: var(--border-light);
+    background-color: var(--surface);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
 }
 
 .tab-button.active {
     color: var(--primary-color);
-    background-color: var(--background);
+    background-color: var(--primary-color);
+    color: white;
     font-weight: 600;
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
 }
 
 .tab-button.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: var(--primary-color);
+    display: none;
 }
 
 .tab-button span {
@@ -682,9 +685,14 @@ h2 {
         font-size: 16px;
     }
 
+    .tabs-area {
+        padding: 6px;
+        gap: 3px;
+    }
+
     .tab-button {
-        padding: 12px 16px;
-        font-size: 14px;
+        padding: 10px 12px;
+        font-size: 13px;
     }
 }
 
@@ -785,20 +793,21 @@ h2 {
     }
 
     /* Improve active tab visibility in dark mode */
-    .tab-button.active {
-        background-color: var(--background) !important;
-        color: var(--primary-color) !important;
-        font-weight: 600;
-        border-bottom: 2px solid var(--primary-color);
+    .tab-button {
+        background: var(--surface) !important;
+        border-color: var(--border);
+        color: var(--text-muted);
     }
 
-    .tab-button.active::after {
-        background-color: var(--primary-color);
-        height: 3px;
+    .tab-button.active {
+        background-color: var(--primary-color) !important;
+        color: var(--background) !important;
+        font-weight: 600;
+        border-color: var(--primary-color);
     }
 
     .tab-button:hover:not(.active) {
-        background-color: var(--border);
+        background-color: var(--border) !important;
         color: var(--text-primary);
     }
 
@@ -870,9 +879,6 @@ h2 {
     }
 
     /* Logo area in dark mode */
-    .logo-area {
-        border-right-color: var(--border);
-    }
 
     .logo-placeholder {
         background: var(--surface);
