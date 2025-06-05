@@ -5,7 +5,8 @@
   "description": "Search and highlight content on web pages with configurable options",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "scripting"
   ],
   "host_permissions": [
     "<all_urls>"

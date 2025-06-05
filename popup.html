@@ -11,25 +11,42 @@
         <h2>Content Search</h2>
         
         <!-- Tab Navigation -->
-        <div class="tab-navigation">
-            <button class="tab-button active" data-tab="search">Search</button>
-            <button class="tab-button" data-tab="goldencall">GoldenCall</button>
-        </div>
+        <nav class="tab-navigation" role="tablist" aria-label="Main navigation">
+            <button class="tab-button active" data-tab="search" role="tab" aria-selected="true" aria-controls="searchTab" id="search-tab">
+                <span>🔍</span> Search
+            </button>
+            <button class="tab-button" data-tab="goldencall" role="tab" aria-selected="false" aria-controls="goldenCallTab" id="goldencall-tab">
+                <span>⭐</span> GoldenCall
+            </button>
+        </nav>
 
         <!-- Search Tab Content -->
-        <div class="tab-content active" id="searchTab">
+        <div class="tab-content active" id="searchTab" role="tabpanel" aria-labelledby="search-tab">
             <div class="search-container">
-                <label for="searchSelect">Search for:</label>
+                <label for="searchInput">Search for:</label>
                 <div class="custom-select">
-                    <input type="text" id="searchInput" placeholder="Type to search or select from dropdown..." autocomplete="off">
-                    <div class="dropdown-arrow">▼</div>
-                    <div class="dropdown-options" id="dropdownOptions">
-                        <div class="option" data-value="envMode" data-search="envMode">envMode</div>
-                        <div class="option" data-value="Output field params parsed" data-search="Output field params parsed">featureFlags - Output field params parsed</div>
-                        <div class="option" data-value="New KVP log" data-search="New KVP log">keyValuePairs</div>
-                        <div class="option" data-value="Api Request builder" data-search="Api Request builder">ws-request</div>
-                        <div class="option" data-value="Output field params parsed" data-search="Output field params parsed">ws-response-fields</div>
-                        <div class="option" data-value="WsResponseDto" data-search="WsResponseDto">ws-response-WsResponseDto</div>
+                    <input type="text" id="searchInput" placeholder="Type to search or select from dropdown..." 
+                           autocomplete="off" aria-expanded="false" aria-haspopup="listbox" role="combobox">
+                    <div class="dropdown-arrow" aria-hidden="true">▼</div>
+                    <div class="dropdown-options" id="dropdownOptions" role="listbox" aria-label="Search options">
+                        <div class="option" data-value="envMode" data-search="envMode" role="option">
+                            <span class="option-icon">🌍</span> envMode
+                        </div>
+                        <div class="option" data-value="Output field params parsed" data-search="Output field params parsed" role="option">
+                            <span class="option-icon">🚩</span> featureFlags - Output field params parsed
+                        </div>
+                        <div class="option" data-value="New KVP log" data-search="New KVP log" role="option">
+                            <span class="option-icon">🔑</span> keyValuePairs
+                        </div>
+                        <div class="option" data-value="Api Request builder" data-search="Api Request builder" role="option">
+                            <span class="option-icon">🔗</span> ws-request
+                        </div>
+                        <div class="option" data-value="Output field params parsed" data-search="Output field params parsed" role="option">
+                            <span class="option-icon">📤</span> ws-response-fields
+                        </div>
+                        <div class="option" data-value="WsResponseDto" data-search="WsResponseDto" role="option">
+                            <span class="option-icon">📋</span> ws-response-WsResponseDto
+                        </div>
                     </div>
                 </div>
             </div>
@@ -48,19 +65,31 @@
             </div>
 
             <div class="button-group">
-                <button id="searchButton" disabled>Search & Highlight</button>
-                <button id="clearButton">Clear Highlights</button>
+                <button id="searchButton" disabled aria-describedby="search-help">
+                    <span class="button-icon">🔍</span> Search & Highlight
+                </button>
+                <button id="clearButton" aria-describedby="clear-help">
+                    <span class="button-icon">✨</span> Clear Highlights
+                </button>
+            </div>
+            <div class="button-help">
+                <small id="search-help" class="help-text">Find and highlight text on the current page</small>
+                <small id="clear-help" class="help-text">Remove all highlights from the page</small>
             </div>
         </div>
 
         <!-- GoldenCall Tab Content -->
-        <div class="tab-content" id="goldenCallTab">
+        <div class="tab-content" id="goldenCallTab" role="tabpanel" aria-labelledby="goldencall-tab">
             <div class="goldencall-container">
                 <label for="goldenInput">Enter Golden Call ID:</label>
                 <div class="golden-input-group">
-                    <input type="text" id="goldenInput" placeholder="Enter Golden Call ID..." />
-                    <button id="getGoldenButton">Get Golden</button>
+                    <input type="text" id="goldenInput" placeholder="Enter Golden Call ID..." 
+                           aria-describedby="golden-help" />
+                    <button id="getGoldenButton" aria-describedby="golden-help">
+                        <span class="button-icon">⭐</span> Get Golden
+                    </button>
                 </div>
+                <small id="golden-help" class="help-text">Search for a specific Golden Call ID on the current page</small>
             </div>
         </div>
 

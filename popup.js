@@ -144,14 +144,18 @@ class PopupController {
 
     showDropdown() {
         const dropdownOptions = document.getElementById('dropdownOptions');
+        const searchInput = document.getElementById('searchInput');
         this.renderOptions();
         dropdownOptions.classList.add('open');
+        searchInput.setAttribute('aria-expanded', 'true');
     }
 
     hideDropdown() {
         setTimeout(() => {
             const dropdownOptions = document.getElementById('dropdownOptions');
+            const searchInput = document.getElementById('searchInput');
             dropdownOptions.classList.remove('open');
+            searchInput.setAttribute('aria-expanded', 'false');
         }, 150);
     }
 
@@ -193,11 +197,15 @@ class PopupController {
         // Update active tab
         this.activeTab = tabName;
         
-        // Update tab button states
+        // Update tab button states and ARIA attributes
         document.querySelectorAll('.tab-button').forEach(btn => {
             btn.classList.remove('active');
+            btn.setAttribute('aria-selected', 'false');
         });
-        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        
+        const activeTabButton = document.querySelector(`[data-tab="${tabName}"]`);
+        activeTabButton.classList.add('active');
+        activeTabButton.setAttribute('aria-selected', 'true');
         
         // Update tab content visibility
         document.querySelectorAll('.tab-content').forEach(content => {
@@ -217,9 +225,17 @@ class PopupController {
         // Reset states when switching tabs
         if (tabName === 'goldencall') {
             this.updateGoldenButton();
+            // Focus on input for better UX
+            setTimeout(() => {
+                document.getElementById('goldenInput').focus();
+            }, 100);
         } else if (tabName === 'search') {
             this.currentMode = 'normal';
             this.updateSearchButton();
+            // Focus on search input for better UX
+            setTimeout(() => {
+                document.getElementById('searchInput').focus();
+            }, 100);
         }
     }
 
@@ -235,66 +251,177 @@ class PopupController {
 
     async getGoldenCall() {
         const goldenInput = document.getElementById('goldenInput');
+        const getGoldenButton = document.getElementById('getGoldenButton');
         const goldenId = goldenInput.value.trim();
         
         if (!goldenId) {
             this.showStatus('Please enter a Golden Call ID', 'error');
+            goldenInput.focus();
             return;
         }
+
+        // Show loading state
+        this.setButtonLoading(getGoldenButton, true);
+        this.showStatus('Searching for Golden Call...', 'info');
 
         try {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             
-            await chrome.tabs.sendMessage(tab.id, {
-                action: 'search',
-                searchTerm: goldenId
-            });
+            // Check if we can access this tab
+            if (!this.canAccessTab(tab)) {
+                this.showStatus('❌ Cannot search on this page. Try a regular webpage.', 'error');
+                return;
+            }
             
-            this.showStatus(`Searching for Golden Call: "${goldenId}"`, 'info');
-            window.close();
+            // Try to send message, if it fails, inject content script and retry
+            try {
+                await chrome.tabs.sendMessage(tab.id, {
+                    action: 'search',
+                    searchTerm: goldenId
+                });
+            } catch (connectionError) {
+                // Content script not loaded, inject it
+                this.showStatus('🔄 Loading search functionality...', 'info');
+                await this.injectContentScript(tab.id);
+                
+                // Wait a moment for script to load, then retry
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await chrome.tabs.sendMessage(tab.id, {
+                    action: 'search',
+                    searchTerm: goldenId
+                });
+            }
+            
+            this.showStatus(`✨ Golden Call "${goldenId}" found and highlighted!`, 'success');
+            
+            // Close popup after a brief delay to show success message
+            setTimeout(() => {
+                window.close();
+            }, 1500);
         } catch (error) {
             console.error('Error getting golden call:', error);
-            this.showStatus('Error getting golden call. Please try again.', 'error');
+            this.showStatus('❌ Error getting golden call. Please refresh the page and try again.', 'error');
+        } finally {
+            this.setButtonLoading(getGoldenButton, false);
         }
     }
 
     async performSearch() {
         const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
         const searchTerm = this.selectedValue || searchInput.value.trim();
         
         if (!searchTerm) {
             this.showStatus('Please enter or select a search term', 'error');
+            searchInput.focus();
             return;
         }
+
+        // Show loading state
+        this.setButtonLoading(searchButton, true);
+        this.showStatus('🔍 Searching and highlighting...', 'info');
 
         try {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             
-            await chrome.tabs.sendMessage(tab.id, {
-                action: 'search',
-                searchTerm: searchTerm
-            });
+            // Check if we can access this tab
+            if (!this.canAccessTab(tab)) {
+                this.showStatus('❌ Cannot search on this page. Try a regular webpage.', 'error');
+                return;
+            }
             
-            this.showStatus(`Searching for: "${searchTerm}"`, 'info');
-            window.close();
+            // Try to send message, if it fails, inject content script and retry
+            try {
+                await chrome.tabs.sendMessage(tab.id, {
+                    action: 'search',
+                    searchTerm: searchTerm
+                });
+            } catch (connectionError) {
+                // Content script not loaded, inject it
+                this.showStatus('🔄 Loading search functionality...', 'info');
+                await this.injectContentScript(tab.id);
+                
+                // Wait a moment for script to load, then retry
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await chrome.tabs.sendMessage(tab.id, {
+                    action: 'search',
+                    searchTerm: searchTerm
+                });
+            }
+            
+            this.showStatus(`✨ Search completed for: "${searchTerm}"`, 'success');
+            
+            // Close popup after a brief delay to show success message
+            setTimeout(() => {
+                window.close();
+            }, 1500);
         } catch (error) {
             console.error('Error performing search:', error);
-            this.showStatus('Error performing search. Please try again.', 'error');
+            this.showStatus('❌ Error performing search. Please refresh the page and try again.', 'error');
+        } finally {
+            this.setButtonLoading(searchButton, false);
         }
     }
 
     async clearHighlights() {
+        const clearButton = document.getElementById('clearButton');
+        
+        // Show loading state
+        this.setButtonLoading(clearButton, true);
+        this.showStatus('✨ Clearing highlights...', 'info');
+
         try {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             
-            await chrome.tabs.sendMessage(tab.id, {
-                action: 'clear'
-            });
+            // Check if we can access this tab
+            if (!this.canAccessTab(tab)) {
+                this.showStatus('❌ Cannot clear highlights on this page.', 'error');
+                return;
+            }
             
-            this.showStatus('Highlights cleared', 'success');
+            // Try to send message, if it fails, inject content script and retry
+            try {
+                await chrome.tabs.sendMessage(tab.id, {
+                    action: 'clear'
+                });
+            } catch (connectionError) {
+                // Content script not loaded, inject it
+                this.showStatus('🔄 Loading clear functionality...', 'info');
+                await this.injectContentScript(tab.id);
+                
+                // Wait a moment for script to load, then retry
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await chrome.tabs.sendMessage(tab.id, {
+                    action: 'clear'
+                });
+            }
+            
+            this.showStatus('🎉 All highlights cleared successfully!', 'success');
         } catch (error) {
             console.error('Error clearing highlights:', error);
-            this.showStatus('Error clearing highlights', 'error');
+            this.showStatus('❌ Error clearing highlights. Please refresh the page and try again.', 'error');
+        } finally {
+            this.setButtonLoading(clearButton, false);
+        }
+    }
+
+    setButtonLoading(button, isLoading) {
+        if (isLoading) {
+            button.disabled = true;
+            button.classList.add('loading');
+            const originalText = button.innerHTML;
+            button.dataset.originalText = originalText;
+            button.innerHTML = '<span class="loading-spinner">⏳</span> Loading...';
+        } else {
+            button.disabled = false;
+            button.classList.remove('loading');
+            if (button.dataset.originalText) {
+                button.innerHTML = button.dataset.originalText;
+                delete button.dataset.originalText;
+            }
         }
     }
 
@@ -308,6 +435,44 @@ class PopupController {
                 statusDiv.textContent = '';
                 statusDiv.className = 'status';
             }, 3000);
+        }
+    }
+
+    canAccessTab(tab) {
+        // Check if the tab URL is accessible for content scripts
+        if (!tab.url) return false;
+        
+        const restrictedProtocols = ['chrome:', 'chrome-extension:', 'edge:', 'moz-extension:', 'about:'];
+        const restrictedPages = ['chrome.google.com/webstore'];
+        
+        // Check protocols
+        if (restrictedProtocols.some(protocol => tab.url.startsWith(protocol))) {
+            return false;
+        }
+        
+        // Check specific restricted pages
+        if (restrictedPages.some(page => tab.url.includes(page))) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    async injectContentScript(tabId) {
+        try {
+            // Inject the content script and CSS
+            await chrome.scripting.executeScript({
+                target: { tabId: tabId },
+                files: ['content.js']
+            });
+            
+            await chrome.scripting.insertCSS({
+                target: { tabId: tabId },
+                files: ['content.css']
+            });
+        } catch (error) {
+            console.error('Failed to inject content script:', error);
+            throw new Error('Failed to load search functionality on this page');
         }
     }
 }
