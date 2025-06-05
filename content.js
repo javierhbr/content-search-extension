@@ -1,3 +1,8 @@
+// Guard against multiple injections
+if (typeof window.ContentSearcher !== 'undefined') {
+    return;
+}
+
 class ContentSearcher {
     constructor() {
         this.highlights = [];
@@ -14,6 +19,9 @@ class ContentSearcher {
             } else if (request.action === 'clear') {
                 this.clearHighlights();
                 sendResponse({ success: true });
+            } else if (request.action === 'getFirstGoogleResult') {
+                const firstResult = this.getFirstGoogleResult();
+                sendResponse({ firstResult: firstResult });
             }
             return true;
         });
@@ -191,12 +199,61 @@ class ContentSearcher {
         this.currentHighlightIndex = 0;
         this.removeCounter();
     }
+
+    getFirstGoogleResult() {
+        try {
+            // Try different selectors for Google search results
+            const selectors = [
+                'h3[data-attrid]', // Google search result titles
+                '.g h3', // Standard Google result titles
+                '.g .LC20lb', // Google result titles (alternative)
+                '.g .DKV0Md', // Google result titles (newer)
+                '[data-attrid] h3', // Google knowledge panel titles
+                '.g a h3', // Google result links with h3
+                '.yuRUbf h3' // Another Google result selector
+            ];
+
+            for (const selector of selectors) {
+                const elements = document.querySelectorAll(selector);
+                if (elements.length > 0) {
+                    // Get the first non-empty text content
+                    for (const element of elements) {
+                        const text = element.textContent?.trim();
+                        if (text && text.length > 0) {
+                            return text;
+                        }
+                    }
+                }
+            }
+
+            // Fallback: try to get any prominent heading
+            const headings = document.querySelectorAll('h1, h2, h3');
+            for (const heading of headings) {
+                const text = heading.textContent?.trim();
+                if (text && text.length > 0 && !text.includes('Google')) {
+                    return text;
+                }
+            }
+
+            return null;
+        } catch (error) {
+            console.error('Error extracting Google result:', error);
+            return null;
+        }
+    }
 }
+
+// Mark as loaded and initialize
+window.ContentSearcher = ContentSearcher;
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        new ContentSearcher();
+        if (!window.contentSearcherInstance) {
+            window.contentSearcherInstance = new ContentSearcher();
+        }
     });
 } else {
-    new ContentSearcher();
+    if (!window.contentSearcherInstance) {
+        window.contentSearcherInstance = new ContentSearcher();
+    }
 }

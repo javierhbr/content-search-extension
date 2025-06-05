@@ -13,6 +13,11 @@ class PopupController {
         this.bindEvents();
         this.updateSearchButton();
         this.updateConfigStatus();
+        
+        // Auto-populate Golden Call input if Golden tab is active by default
+        if (this.activeTab === 'goldencall') {
+            this.autoPopulateGoldenCall();
+        }
     }
 
     async setupOptions() {
@@ -263,6 +268,8 @@ class PopupController {
         // Reset states when switching tabs
         if (tabName === 'goldencall') {
             this.updateGoldenButton();
+            // Auto-populate Golden Call input when tab is opened
+            this.autoPopulateGoldenCall();
             // Focus on input for better UX
             setTimeout(() => {
                 document.getElementById('goldenInput').focus();
@@ -295,6 +302,18 @@ class PopupController {
         if (!goldenId) {
             this.showStatus('Please enter a Golden Call ID', 'error');
             goldenInput.focus();
+            return;
+        }
+
+        // Validate domain for Golden tab
+        try {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (!this.isValidDomainForGolden(tab.url)) {
+                this.showStatus('❌ Golden Call only works on google.cl domains', 'error');
+                return;
+            }
+        } catch (error) {
+            this.showStatus('❌ Cannot access current tab', 'error');
             return;
         }
 
@@ -363,6 +382,18 @@ class PopupController {
         if (!searchTerm) {
             this.showStatus('Please enter or select a search term', 'error');
             searchInput.focus();
+            return;
+        }
+
+        // Validate domain for Search tab
+        try {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (!this.isValidDomainForSearch(tab.url)) {
+                this.showStatus('❌ Search only works on emol.com domains', 'error');
+                return;
+            }
+        } catch (error) {
+            this.showStatus('❌ Cannot access current tab', 'error');
             return;
         }
 
@@ -680,6 +711,49 @@ class PopupController {
         } catch (error) {
             console.error('Error clearing configuration:', error);
             this.showStatus('❌ Failed to clear configuration', 'error');
+        }
+    }
+
+    // Domain validation methods
+    isValidDomainForGolden(url) {
+        if (!url) return false;
+        return url.includes('google.cl');
+    }
+
+    isValidDomainForSearch(url) {
+        if (!url) return false;
+        return url.includes('emol.com');
+    }
+
+    // Auto-populate Golden Call input with first Google result
+    async autoPopulateGoldenCall() {
+        try {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            
+            // Only auto-populate if we're on a valid Google domain
+            if (!this.isValidDomainForGolden(tab.url)) {
+                return;
+            }
+
+            // Inject content script to extract first result
+            await this.injectContentScript(tab.id);
+            
+            // Wait a moment for script to load
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            // Get first Google result
+            const response = await chrome.tabs.sendMessage(tab.id, {
+                action: 'getFirstGoogleResult'
+            });
+            
+            if (response && response.firstResult) {
+                const goldenInput = document.getElementById('goldenInput');
+                goldenInput.value = response.firstResult;
+                this.updateGoldenButton();
+            }
+        } catch (error) {
+            console.log('Could not auto-populate Golden Call input:', error);
+            // Silently fail - this is an enhancement, not critical functionality
         }
     }
 }
