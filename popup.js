@@ -1,3 +1,7 @@
+// URL matching constants
+const GOLDEN_CALL_DOMAINS = ['github.com/javierhbr'];
+const SEARCH_DOMAINS = ['.emol.com'];
+
 class PopupController {
     constructor() {
         this.selectedValue = '';
@@ -5,11 +9,14 @@ class PopupController {
         this.highlightedIndex = -1;
         this.currentMode = 'normal';
         this.activeTab = 'goldencall';
+        this.injectedTabs = new Set(); // Track which tabs have content script injected
+        this.isAutoPopulating = false; // Prevent concurrent auto-populate calls
         // init() will be called manually after construction
     }
 
     async init() {
         await this.setupOptions();
+        await this.determineActiveTab();
         this.bindEvents();
         this.updateSearchButton();
         this.updateConfigStatus();
@@ -31,32 +38,31 @@ class PopupController {
             { label: 'ws-response-WsResponseDto', searchValue: 'WsResponseDto' }
         ];
 
+        // Set default options immediately to avoid empty state
+        this.options = defaultOptions;
+        this.filteredOptions = [...this.options];
+        this.updateConfigStatus('Default config', '');
+
         try {
-            // Try to load options from local storage first
+            // Try to load options from local storage
             const result = await chrome.storage.local.get(['searchConfig']);
             
             if (result.searchConfig && Array.isArray(result.searchConfig) && result.searchConfig.length > 0) {
-                // Use stored configuration
+                // Replace with stored configuration
                 this.options = result.searchConfig.map(item => ({
                     label: item.label,
                     searchValue: item.searchValue
                 }));
+                this.filteredOptions = [...this.options];
                 this.updateConfigStatus('Custom config', 'loaded');
                 console.log('Loaded custom configuration from storage:', this.options.length, 'options');
             } else {
-                // Use default options
-                this.options = defaultOptions;
-                this.updateConfigStatus('Default config', '');
                 console.log('Using default configuration:', this.options.length, 'options');
             }
         } catch (error) {
             console.error('Error loading configuration from storage:', error);
-            // Fall back to default options
-            this.options = defaultOptions;
-            this.updateConfigStatus('Default config', '');
+            // Keep default options already set
         }
-
-        this.filteredOptions = [...this.options];
     }
 
     bindEvents() {
@@ -247,8 +253,10 @@ class PopupController {
         });
         
         const activeTabButton = document.querySelector(`[data-tab="${tabName}"]`);
-        activeTabButton.classList.add('active');
-        activeTabButton.setAttribute('aria-selected', 'true');
+        if (activeTabButton) {
+            activeTabButton.classList.add('active');
+            activeTabButton.setAttribute('aria-selected', 'true');
+        }
         
         // Update tab content visibility
         document.querySelectorAll('.tab-pane').forEach(content => {
@@ -309,7 +317,7 @@ class PopupController {
         try {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             if (!this.isValidDomainForGolden(tab.url)) {
-                this.showStatus('❌ Golden Call only works on google.cl domains', 'error');
+                this.showStatus('❌ Golden Call only works on github.com/javierhbr', 'error');
                 return;
             }
         } catch (error) {
@@ -717,43 +725,116 @@ class PopupController {
     // Domain validation methods
     isValidDomainForGolden(url) {
         if (!url) return false;
-        return url.includes('google.cl');
+        return GOLDEN_CALL_DOMAINS.some(domain => url.includes(domain));
     }
 
     isValidDomainForSearch(url) {
         if (!url) return false;
-        return url.includes('emol.com');
+        return SEARCH_DOMAINS.some(domain => url.includes(domain));
     }
 
-    // Auto-populate Golden Call input with first Google result
+    // Determine which tab should be active based on current URL
+    async determineActiveTab() {
+        try {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (!tab.url) return;
+
+            if (this.isValidDomainForGolden(tab.url)) {
+                this.activeTab = 'goldencall';
+                this.switchTab('goldencall');
+            } else if (this.isValidDomainForSearch(tab.url)) {
+                this.activeTab = 'search';
+                this.switchTab('search');
+            }
+            // If no matching URL, keep default activeTab ('goldencall')
+        } catch (error) {
+            console.log('Could not determine active tab from URL:', error);
+            // Keep default activeTab
+        }
+    }
+
+    // Auto-populate Golden Call input with golden ID value from HTML
     async autoPopulateGoldenCall() {
+        // Prevent concurrent executions
+        if (this.isAutoPopulating) {
+            console.log('Auto-populate already in progress, skipping');
+            return;
+        }
+
+        this.isAutoPopulating = true;
+        
         try {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             
-            // Only auto-populate if we're on a valid Google domain
+            // Only auto-populate if we're on a valid GitHub domain
             if (!this.isValidDomainForGolden(tab.url)) {
+                console.log('Not on valid GitHub domain:', tab.url);
                 return;
             }
 
-            // Inject content script to extract first result
-            await this.injectContentScript(tab.id);
-            
-            // Wait a moment for script to load
-            await new Promise(resolve => setTimeout(resolve, 300));
-            
-            // Get first Google result
-            const response = await chrome.tabs.sendMessage(tab.id, {
-                action: 'getFirstGoogleResult'
-            });
-            
-            if (response && response.firstResult) {
-                const goldenInput = document.getElementById('goldenInput');
-                goldenInput.value = response.firstResult;
-                this.updateGoldenButton();
+            // Check if we can access this tab
+            if (!this.canAccessTab(tab)) {
+                console.log('Cannot access tab for auto-populate');
+                return;
+            }
+
+            console.log('Attempting to extract golden ID from HTML on tab:', tab.id);
+
+            // Use executeScript to directly extract from DOM without message passing
+            try {
+                const results = await chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    func: () => {
+                        // Extract golden ID value from the specific span element
+                        const usernameSpan = document.querySelector('.p-nickname.vcard-username.d-block');
+                        if (usernameSpan) {
+                            const username = usernameSpan.textContent?.trim();
+                            if (username && username.length > 0) {
+                                console.log('Found username in span element:', username);
+                                return username;
+                            }
+                        }
+
+                        // Try alternative selectors for GitHub usernames
+                        const altSelectors = [
+                            '[data-hovercard-type="user"] .p-nickname',
+                            '.vcard-username',
+                            '.p-nickname',
+                            '[itemprop="additionalName"]'
+                        ];
+
+                        for (const selector of altSelectors) {
+                            const element = document.querySelector(selector);
+                            if (element) {
+                                const username = element.textContent?.trim();
+                                if (username && username.length > 0) {
+                                    console.log('Found username with selector', selector, ':', username);
+                                    return username;
+                                }
+                            }
+                        }
+
+                        console.log('No golden ID value found in HTML');
+                        return null;
+                    }
+                });
+
+                if (results && results[0] && results[0].result) {
+                    const goldenIdValue = results[0].result;
+                    const goldenInput = document.getElementById('goldenInput');
+                    goldenInput.value = goldenIdValue;
+                    this.updateGoldenButton();
+                    console.log('Auto-populated golden ID value from HTML:', goldenIdValue);
+                } else {
+                    console.log('No golden ID value found in HTML elements');
+                }
+            } catch (scriptError) {
+                console.log('Failed to execute script on page:', scriptError);
             }
         } catch (error) {
             console.log('Could not auto-populate Golden Call input:', error);
-            // Silently fail - this is an enhancement, not critical functionality
+        } finally {
+            this.isAutoPopulating = false;
         }
     }
 }

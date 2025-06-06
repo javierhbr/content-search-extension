@@ -1,5 +1,6 @@
 // Guard against multiple injections
-if (typeof window.ContentSearcher !== 'undefined') {
+if (typeof window.ContentSearcher !== 'undefined' && window.contentSearcherInstance) {
+    console.log('Content script already loaded, skipping initialization');
     return;
 }
 
@@ -19,9 +20,9 @@ class ContentSearcher {
             } else if (request.action === 'clear') {
                 this.clearHighlights();
                 sendResponse({ success: true });
-            } else if (request.action === 'getFirstGoogleResult') {
-                const firstResult = this.getFirstGoogleResult();
-                sendResponse({ firstResult: firstResult });
+            } else if (request.action === 'getGoldenIdValue') {
+                const goldenIdValue = this.getGoldenIdValue();
+                sendResponse({ goldenIdValue: goldenIdValue });
             }
             return true;
         });
@@ -200,44 +201,49 @@ class ContentSearcher {
         this.removeCounter();
     }
 
-    getFirstGoogleResult() {
+    getGoldenIdValue() {
         try {
-            // Try different selectors for Google search results
-            const selectors = [
-                'h3[data-attrid]', // Google search result titles
-                '.g h3', // Standard Google result titles
-                '.g .LC20lb', // Google result titles (alternative)
-                '.g .DKV0Md', // Google result titles (newer)
-                '[data-attrid] h3', // Google knowledge panel titles
-                '.g a h3', // Google result links with h3
-                '.yuRUbf h3' // Another Google result selector
+            // Extract golden ID value from the specific span element
+            const usernameSpan = document.querySelector('.p-nickname.vcard-username.d-block');
+            if (usernameSpan) {
+                const username = usernameSpan.textContent?.trim();
+                if (username && username.length > 0) {
+                    console.log('Found username in span element:', username);
+                    return username;
+                }
+            }
+
+            // Try alternative selectors for GitHub usernames
+            const altSelectors = [
+                '[data-hovercard-type="user"] .p-nickname',
+                '.vcard-username',
+                '.p-nickname',
+                '[itemprop="additionalName"]'
             ];
 
-            for (const selector of selectors) {
-                const elements = document.querySelectorAll(selector);
-                if (elements.length > 0) {
-                    // Get the first non-empty text content
-                    for (const element of elements) {
-                        const text = element.textContent?.trim();
-                        if (text && text.length > 0) {
-                            return text;
-                        }
+            for (const selector of altSelectors) {
+                const element = document.querySelector(selector);
+                if (element) {
+                    const username = element.textContent?.trim();
+                    if (username && username.length > 0) {
+                        console.log('Found username with selector', selector, ':', username);
+                        return username;
                     }
                 }
             }
 
-            // Fallback: try to get any prominent heading
-            const headings = document.querySelectorAll('h1, h2, h3');
-            for (const heading of headings) {
-                const text = heading.textContent?.trim();
-                if (text && text.length > 0 && !text.includes('Google')) {
-                    return text;
-                }
+            // Fallback: try to get golden ID value from URL
+            const url = window.location.href;
+            const usernameMatch = url.match(/github\.com\/([^\/]+)/);
+            if (usernameMatch && usernameMatch[1]) {
+                console.log('Found username from URL:', usernameMatch[1]);
+                return usernameMatch[1];
             }
 
+            console.log('No golden ID value found on page');
             return null;
         } catch (error) {
-            console.error('Error extracting Google result:', error);
+            console.error('Error extracting golden ID value:', error);
             return null;
         }
     }
