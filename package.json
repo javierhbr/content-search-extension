@@ -1,0 +1,40 @@
+{
+  "name": "content-search-extension",
+  "version": "1.0.0",
+  "description": "A Chrome extension that allows users to search and highlight content on web pages using predefined search options.",
+  "main": "background.js",
+  "scripts": {
+    "dev": "vite --mode development",
+    "build": "npm run clean && tsc && vite build && cp public/manifest.json dist/manifest.json && cp public/background.js dist/ && if [ -f dist/src/popup/index.html ]; then mv dist/src/popup/index.html dist/index.html; fi && rm -rf dist/src",
+    "build:web": "tsc && vite build",
+    "preview": "vite preview",
+    "watch": "vite build --watch",
+    "clean": "rm -rf dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/javierhbr/content-search-extension.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/javierhbr/content-search-extension/issues"
+  },
+  "homepage": "https://github.com/javierhbr/content-search-extension#readme",
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.326",
+    "@types/node": "^24.0.1",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  }
+}
