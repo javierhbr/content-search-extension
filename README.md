@@ -76,3 +76,47 @@ The extension uses:
 - `activeTab`: Access to the currently active tab for content searching
 - `storage`: Store and retrieve the JSON configuration URL
 - `<all_urls>`: Host permissions for content script injection
+
+
+
+
+No, the order in the TypeScript type annotation `'search' | 'goldencall' | 'configuration'` does **not** determine the default. The default is determined by the actual **value** assigned to `defaultTab`.
+
+## **How to Change the Default Tab:**
+
+### **Method 1: Through the UI (Recommended)**
+1. Open the Chrome extension popup
+2. Click the Configuration tab (⚙️)
+3. Scroll down to "Tab Behavior" section
+4. Use the dropdown to select your preferred default tab
+5. The setting is automatically saved
+
+### **Method 2: Modify the Code**
+To change the default tab in the code, you only need to change the **value** (not the type annotation):
+
+**Current code:**
+```typescript
+defaultTab: 'configuration' as 'search' | 'goldencall' | 'configuration',
+```
+
+**To make Search the default:**
+```typescript
+defaultTab: 'search' as 'search' | 'goldencall' | 'configuration',
+```
+
+**To make Golden Call the default:**
+```typescript
+defaultTab: 'goldencall' as 'search' | 'goldencall' | 'configuration',
+```
+
+The actual default is determined by the value before `as`, which is currently `'goldencall'` - so Golden Call tab will be the default when the extension opens (unless auto-switching is enabled and you're on a specific domain).
+
+## **Understanding the Syntax:**
+
+- **`'configuration'`** = The actual default value (this is what matters)
+- **`as 'search' | 'goldencall' | 'configuration'`** = TypeScript type annotation (order doesn't matter)
+
+The type annotation just tells TypeScript "this value must be one of these three options" - the order is irrelevant. Only the actual value (`'configuration'`, `'search'`, or `'goldencall'`) determines which tab opens by default.
+
+Would you like me to change it to a specific default tab for you?
+
