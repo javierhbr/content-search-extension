@@ -1,122 +1,397 @@
 # Content Search Extension
 
-A Chrome extension that allows users to search and highlight content on web pages using predefined search options.
+A modern Chrome extension built with **TypeScript**, **React 19**, and **Vite** that allows users to search and highlight content on web pages with configurable options and GitHub integration.
 
-## Features
+## 🚀 Quick Start
 
-- **Popup Interface**: Click the extension icon to open a popup with a searchable dropdown
-- **Searchable Dropdown**: Type to filter predefined options or enter custom search terms
-- **Predefined Options**: Built-in search options across multiple categories:
-  - envMode
-  - featureFlags - Output field params parsed
-  - keyValuePairs
-  - ws-request
-  - ws-response-fields
-  - ws-response-WsResponseDto
-- **Text Search & Highlight**: Search for selected terms on the current web page
-- **Visual Feedback**: Highlighted matches with scroll-to-first functionality
-- **Match Counter**: Shows the number of matches found
-- **Clear Highlights**: Remove all highlights from the page
+### Prerequisites
+- Node.js (v16 or higher)
+- npm or yarn
+- Chrome browser
 
-## Installation
+### Installation & Setup
 
-1. Clone or download this repository
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" in the top right corner
-4. Click "Load unpacked" and select the extension directory
-5. The extension icon will appear in the Chrome toolbar
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd content-search-extension
+   ```
 
-## Usage
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-1. **Search Content**:
-   - Click the extension icon to open the popup
-   - Type in the search field to filter options or click the dropdown arrow to see all options
-   - Select a predefined option or type your own search term
-   - Click "Search & Highlight" to find and highlight matches on the current page
+3. **Build the extension**
+   ```bash
+   npm run build
+   ```
 
-2. **Clear Highlights**:
-   - Click "Clear Highlights" to remove all highlighting from the page
+4. **Load in Chrome**
+   - Open Chrome and navigate to `chrome://extensions/`
+   - Enable "Developer mode" in the top right corner
+   - Click "Load unpacked" and select the `dist/` folder
+   - The extension icon will appear in the Chrome toolbar
 
-## Search Categories
+## 🛠️ Development
 
-The extension provides the following search categories:
+### Development Commands
 
-- **envMode**: Searches for "envMode"
-- **featureFlags - Output field params parsed**: Searches for "Output field params parsed"
-- **keyValuePairs**: Searches for "New KVP log"
-- **ws-request**: Searches for "Api Request builder"
-- **ws-response-fields**: Searches for "Output field params parsed"
-- **ws-response-WsResponseDto**: Searches for "WsResponseDto"
+| Command | Purpose | Output |
+|---------|---------|--------|
+| `npm run dev` | Web development mode | `http://localhost:5173` |
+| `npm run build` | Build Chrome extension | `dist/` folder |
+| `npm run build:web` | Build web app only | `dist/` folder |
+| `npm run clean` | Clean build artifacts | - |
+| `npm run watch` | Watch mode for development | `dist/` folder |
 
-## File Structure
+### Dual-Mode Development
 
+This extension supports **two development modes**:
+
+#### 🌐 **Web Development Mode** (Recommended for UI development)
+```bash
+npm run dev
 ```
-content-search-extension/
-├── manifest.json          # Extension manifest
-├── popup.html             # Popup interface
-├── popup.css              # Popup styling
-├── popup.js               # Popup functionality
-├── content.js             # Content script for page interaction
-├── content.css            # Highlighting styles
-├── background.js          # Background service worker
-├── sample-config.json     # Example configuration
-└── README.md              # This file
+- **Purpose**: Rapid UI development with hot reload
+- **URL**: `http://localhost:5173`
+- **Features**: React hot reload, browser DevTools, fast iteration
+- **Chrome APIs**: Mocked for web compatibility
+- **Storage**: Uses localStorage instead of Chrome storage
+- **Visual Indicator**: Shows "🌐 Web Development Mode" banner
+
+#### 🔧 **Chrome Extension Mode** (For testing extension features)
+```bash
+npm run build
+```
+- **Purpose**: Test real Chrome extension functionality
+- **Output**: Creates extension in `dist/` folder
+- **Features**: Real Chrome APIs, content script injection, background script
+- **Installation**: Load `dist/` folder as unpacked extension in Chrome
+
+### Why Dual-Mode?
+
+- **10x Faster Development**: Hot reload vs extension reload cycle
+- **Better Debugging**: Full browser DevTools access in web mode
+- **Flexible Testing**: Test UI in web mode, functionality in extension mode
+- **Shared Codebase**: Same React components work in both contexts
+
+## 🏗️ Architecture
+
+### Tech Stack
+- **React 19**: Modern React with hooks and functional components
+- **TypeScript**: Strict type safety throughout
+- **Vite**: Lightning-fast build system with HMR
+- **Chrome Extension Manifest V3**: Latest Chrome extension standard
+
+### Project Structure
+```
+src/
+├── popup/                    # React application
+│   ├── App.tsx              # Main application component
+│   ├── App.css              # Global styles
+│   ├── main.tsx             # React entry point
+│   ├── index.html           # Popup HTML template
+│   └── components/          # React components
+│       ├── TabNavigation.tsx    # Tab switching interface
+│       ├── SearchTab.tsx        # Search functionality
+│       ├── GoldenCallTab.tsx    # GitHub integration
+│       ├── ConfigurationTab.tsx # Settings and configuration
+│       └── StatusMessage.tsx    # User feedback messages
+├── content/                 # Content script
+│   ├── content.ts           # Page interaction logic
+│   └── content.css          # Highlighting styles
+├── background/              # Service worker (unused in current build)
+│   └── background.ts
+├── services/                # API and business logic
+│   ├── chromeExtensionApiService.ts  # CORS bypass service
+│   └── goldenCallService.ts          # GitHub integration service
+├── types/                   # TypeScript definitions
+│   └── index.ts             # Shared type definitions
+└── utils/                   # Utilities
+    ├── config.ts            # Configuration management
+    └── chromeApiWrapper.ts  # Chrome API abstraction
 ```
 
-## Development
+### Build Output Structure
+```
+dist/
+├── index.html              # Extension popup (React app)
+├── popup.js               # Bundled React application
+├── popup.css              # Compiled styles
+├── content.js             # Content script
+├── content.css            # Content script styles
+├── background.js          # Service worker
+└── manifest.json          # Chrome extension manifest
+```
 
-The extension uses:
-- **Manifest V3** for Chrome extension API
-- **Content Scripts** to interact with web pages
-- **Chrome Storage API** to persist configuration URLs
-- **Chrome Tabs API** for communication between popup and content scripts
+## ✨ Features
 
-## Permissions
+### OCP Log Search
+- **Smart Search Interface**: Tabbed interface with Search, Golden Call, and Configuration tabs
+- **Predefined Options**: Built-in search options for common terms:
+  - `envMode`
+  - `featureFlags - Output field params parsed`
+  - `keyValuePairs`
+  - `ws-request`
+  - `ws-response-fields`
+  - `ws-response-WsResponseDto`
+- **Custom Search**: Type any search term to find and highlight on the page
+- **Visual Highlighting**: Matches are highlighted with smooth scrolling to first result
+- **Match Counter**: Shows number of matches found with auto-hide
+- **Clear Highlights**: Remove all highlights with one click
 
-- `activeTab`: Access to the currently active tab for content searching
-- `storage`: Store and retrieve the JSON configuration URL
-- `<all_urls>`: Host permissions for content script injection
+<img src="doc-assets/search-feature.png" alt="Search Feature" width="400" height="400">
 
+### OCP Integration (Golden Call)
+- **Auto-Detection**: Automatically extracts GitHub username from profile pages
+- **Smart Tab Switching**: Automatically switches to Golden Call tab when on GitHub
+- **Username Extraction**: Extracts from `<span class="p-nickname vcard-username d-block" itemprop="additionalName">`
+- **Manual Input**: Option to manually enter Golden ID
+- **Status Feedback**: Visual feedback for successful/failed operations
 
+<img src="doc-assets/search-feature.png" alt="Golden Call Feature" width="400" height="400">
 
+### Configuration Management
+- **JSON Configuration**: Upload custom search configurations via JSON files
+- **Tab Behavior Settings**:
+  - **Default Tab**: Choose which tab opens by default (Search, Golden Call, or Configuration)
+  - **Auto-Switch**: Enable/disable automatic tab switching based on domain
+- **Persistent Storage**: Settings are saved using Chrome storage API
+- **Domain-Based Logic**: 
+  - GitHub domains (`github.com`) → Golden Call tab
+  - Emol domains (`emol.com`) → Search tab
+  - Other domains → Default tab
 
-No, the order in the TypeScript type annotation `'search' | 'goldencall' | 'configuration'` does **not** determine the default. The default is determined by the actual **value** assigned to `defaultTab`.
+## 🔧 Configuration
 
-## **How to Change the Default Tab:**
+### Default Tab Behavior
 
-### **Method 1: Through the UI (Recommended)**
-1. Open the Chrome extension popup
-2. Click the Configuration tab (⚙️)
-3. Scroll down to "Tab Behavior" section
-4. Use the dropdown to select your preferred default tab
-5. The setting is automatically saved
+The extension uses intelligent tab selection:
 
-### **Method 2: Modify the Code**
-To change the default tab in the code, you only need to change the **value** (not the type annotation):
+#### **Current Configuration**
+- **Default Tab**: Golden Call (`goldencall`)
+- **Auto-Switch**: Enabled
 
-**Current code:**
+#### **Auto-Switch Logic**
+1. **GitHub domains** (`github.com`) → **Golden Call tab**
+2. **Emol domains** (`.emol.com`) → **Search tab**
+3. **Other domains** → **Default tab**
+
+#### **Changing Default Tab**
+
+**Method 1: Through UI (Recommended)**
+1. Open the extension popup
+2. Go to Configuration tab (⚙️)
+3. Scroll to "Tab Behavior" section
+4. Select preferred default tab from dropdown
+5. Toggle auto-switch behavior as needed
+
+**Method 2: Code Modification**
+Edit `src/utils/config.ts`:
 ```typescript
-defaultTab: 'configuration' as 'search' | 'goldencall' | 'configuration',
+export const DEFAULT_TAB_CONFIG = {
+  defaultTab: 'search' as 'search' | 'goldencall' | 'configuration', // Change this value
+  autoSwitchTabs: true // Whether to automatically switch tabs based on domain
+};
 ```
 
-**To make Search the default:**
+### Custom Search Configuration
+
+Create a JSON file with custom search options:
+
+```json
+{
+  "options": [
+    { "label": "Custom Search 1", "searchValue": "search-term-1" },
+    { "label": "Custom Search 2", "searchValue": "search-term-2" }
+  ],
+  "version": "1.0.0",
+  "tabConfig": {
+    "defaultTab": "search",
+    "autoSwitchTabs": true
+  }
+}
+```
+
+Upload via Configuration tab → "Load JSON Config" button.
+
+## 🔍 Golden ID Extraction
+
+The `getGoldenIdValue()` method extracts values from HTML elements. Currently configured for GitHub usernames:
+
+### Current Implementation
 ```typescript
-defaultTab: 'search' as 'search' | 'goldencall' | 'configuration',
+public getGoldenIdValue(): string | null {
+  try {
+    // Look for GitHub username element
+    const usernameElement = document.querySelector('span.p-nickname.vcard-username.d-block[itemprop="additionalName"]');
+    
+    if (usernameElement && usernameElement.textContent) {
+      return usernameElement.textContent.trim();
+    }
+    return null;
+  } catch (error) {
+    console.error('Error extracting golden ID:', error);
+    return null;
+  }
+}
 ```
 
-**To make Golden Call the default:**
+### Customizing for Other Sites
+
+To extract values from different websites, modify the CSS selector in `src/content/content.ts`:
+
+**For LinkedIn:**
 ```typescript
-defaultTab: 'goldencall' as 'search' | 'goldencall' | 'configuration',
+const linkedInElement = document.querySelector('.text-heading-xlarge');
 ```
 
-The actual default is determined by the value before `as`, which is currently `'goldencall'` - so Golden Call tab will be the default when the extension opens (unless auto-switching is enabled and you're on a specific domain).
+**For Twitter/X:**
+```typescript
+const twitterElement = document.querySelector('[data-testid="UserName"]');
+```
 
-## **Understanding the Syntax:**
+**For Custom Sites:**
+```typescript
+const customElement = document.querySelector('#user-id, .username, [data-user]');
+```
 
-- **`'configuration'`** = The actual default value (this is what matters)
-- **`as 'search' | 'goldencall' | 'configuration'`** = TypeScript type annotation (order doesn't matter)
+**Multiple Fallbacks:**
+```typescript
+const selectors = [
+  'span.p-nickname.vcard-username.d-block[itemprop="additionalName"]', // GitHub
+  'span.p-name.vcard-fullname.d-block[itemprop="name"]',               // GitHub full name
+  '[data-testid="user-profile-name"]',                                  // Alternative
+];
 
-The type annotation just tells TypeScript "this value must be one of these three options" - the order is irrelevant. Only the actual value (`'configuration'`, `'search'`, or `'goldencall'`) determines which tab opens by default.
+for (const selector of selectors) {
+  const element = document.querySelector(selector);
+  if (element && element.textContent) {
+    return element.textContent.trim();
+  }
+}
+```
 
-Would you like me to change it to a specific default tab for you?
+## 🎨 UI Components
+
+### StatusMessage Component
+- **Position**: Bottom-left corner (configurable)
+- **Types**: Success (green), Error (red), Info (blue)
+- **Auto-Hide**: Disappears after 3 seconds
+- **Flat Design**: Minimal shadows and borders for modern look
+
+### Tab Navigation
+- **Dynamic Tabs**: Width adjusts to content
+- **Seamless Design**: Tabs blend with main content
+- **Visual Feedback**: Clear active state indication
+- **Accessibility**: Proper ARIA labels and keyboard navigation
+
+### Configuration Tab
+- **File Upload**: Simple button for JSON configuration files
+- **Tab Behavior Settings**: Dropdown and checkbox for user preferences
+- **Status Display**: Shows current configuration status
+- **Help Text**: Clear instructions for each option
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+**1. Extension Not Loading**
+```bash
+# Clean and rebuild
+npm run clean
+npm run build
+```
+
+**2. Content CSS Not Loading**
+- Ensure `content.css` is imported in `content.ts`
+- Check that `content.css` exists in `dist/` after build
+
+**3. Chrome APIs Not Working in Web Mode**
+- This is expected behavior - Chrome APIs are mocked in web development mode
+- Use extension mode (`npm run build`) to test real Chrome functionality
+
+**4. TypeScript Errors**
+```bash
+# Run TypeScript compiler to see detailed errors
+npx tsc --noEmit
+```
+
+**5. Build Failures**
+```bash
+# Clean and reinstall dependencies
+npm run clean
+rm -rf node_modules package-lock.json
+npm install
+npm run build
+```
+
+### Development Workflow
+
+1. **Start with web development mode** for UI work:
+   ```bash
+   npm run dev
+   ```
+
+2. **Test functionality in extension mode**:
+   ```bash
+   npm run build
+   # Load dist/ folder in Chrome
+   ```
+
+3. **Iterate quickly**: Make changes in web mode, then test in extension mode
+
+## 📦 Migration History
+
+This extension was successfully migrated from:
+- **From**: 845 lines of vanilla JavaScript
+- **To**: Modern TypeScript + React 19 + Vite architecture
+- **Benefits**: Type safety, hot reload, component architecture, better maintainability
+
+### Key Improvements
+✅ **Type Safety**: Strict TypeScript with no `any` types  
+✅ **Modern React**: Hooks, functional components, React 19  
+✅ **Fast Development**: Vite with hot module replacement  
+✅ **Component Architecture**: Reusable, maintainable code  
+✅ **Dual-Mode Support**: Web development + Extension testing  
+✅ **Build Optimization**: Tree shaking, code splitting  
+
+## 📄 Permissions
+
+The extension requires these Chrome permissions:
+
+- **`activeTab`**: Access to the currently active tab for content searching
+- **`storage`**: Store and retrieve configuration data
+- **`scripting`**: Inject content scripts for page interaction
+- **`webRequest`**: Handle API requests through background script
+- **`host_permissions`**: Access to all websites for content script injection
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make changes in web development mode: `npm run dev`
+4. Test in extension mode: `npm run build`
+5. Commit changes: `git commit -am 'Add feature'`
+6. Push to branch: `git push origin feature-name`
+7. Submit a pull request
+
+## 📝 License
+
+This project is licensed under the ISC License - see the package.json for details.
+
+---
+
+## 🗑️ Cleanup
+
+After creating this comprehensive README, the following documentation files can be deleted as their content has been consolidated:
+
+- `BUILD_SIMPLIFICATION_COMPLETE.md`
+- `CHROME_EXTENSION_FIX_COMPLETE.md`
+- `DUAL_MODE_COMPLETE.md`
+- `IMPLEMENTATION_COMPLETE.md`
+- `MIGRATION_COMPLETE.md`
+- `MIGRATION.md`
+- `NEW_SETUP.md`
 
