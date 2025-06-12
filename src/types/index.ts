@@ -36,7 +36,6 @@ export interface PopupState {
   selectedValue: string;
   filteredOptions: SearchOption[];
   highlightedIndex: number;
-  currentMode: 'normal' | 'logs';
   activeTab: 'search' | 'goldencall' | 'configuration';
   isAutoPopulating: boolean;
 }

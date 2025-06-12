@@ -1,4 +1,3 @@
-import { SearchRequest, SearchResponse } from '@/types';
 import './content.css';
 
 class ContentSearcher {
@@ -12,18 +11,47 @@ class ContentSearcher {
 
   private init(): void {
     chrome.runtime.onMessage.addListener((
-      request: SearchRequest,
+      request: any, // Accept any message type
       _sender: chrome.runtime.MessageSender,
-      sendResponse: (response: SearchResponse) => void
-    ): boolean => {
-      if (request.action === 'search' && request.searchTerm) {
-        this.performSearch(request.searchTerm);
-        sendResponse({ success: true });
-      } else if (request.action === 'clear') {
-        this.clearHighlights();
-        sendResponse({ success: true });
+      sendResponse: (response: any) => void
+    ): boolean | void => {
+      try {
+        if (request.action === 'ping') {
+          sendResponse({ success: true, status: 'ready' });
+          return false; // Synchronous response
+        } else if (request.action === 'search' && request.searchTerm) {
+          this.performSearch(request.searchTerm);
+          sendResponse({ success: true });
+          return false; // Synchronous response
+        } else if (request.action === 'clear') {
+          this.clearHighlights();
+          sendResponse({ success: true });
+          return false; // Synchronous response
+        } else if (request.action === 'getGolden') {
+          // Handle getGolden request
+          if (request.goldenId) {
+            // This is a request to set/use a golden ID
+            sendResponse({ success: true, message: 'Golden ID received' });
+          } else {
+            // This is a request to get the golden ID from the page
+            const goldenId = this.getGoldenIdValue();
+            if (goldenId) {
+              sendResponse({ success: true, goldenId });
+            } else {
+              sendResponse({ success: false, error: 'Golden ID not found' });
+            }
+          }
+          return false; // Synchronous response
+        } else {
+          // Unknown action
+          sendResponse({ success: false, error: 'Unknown action' });
+          return false; // Synchronous response
+        }
+      } catch (error) {
+        console.error('Content script error:', error);
+        sendResponse({ success: false, error: 'Content script error' });
+        return false; // Synchronous response
       }
-      return true;
     });
   }
 

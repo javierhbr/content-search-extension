@@ -50,7 +50,7 @@ export class ChromeApiWrapper {
       
       switch (message.action) {
         case 'getGolden':
-          return { goldenId: 'mock-golden-id-123' };
+          return { success: true, goldenId: 'mock-golden-id-123' };
         case 'search':
           return { success: true, matchCount: 3 };
         case 'clear':
@@ -61,9 +61,22 @@ export class ChromeApiWrapper {
     }
 
     try {
-      return await chrome.tabs.sendMessage(tabId, message);
+      // Add timeout to prevent hanging
+      const messagePromise = chrome.tabs.sendMessage(tabId, message);
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Message timeout')), 5000);
+      });
+      
+      const response = await Promise.race([messagePromise, timeoutPromise]);
+      return response;
     } catch (error) {
       console.error('Failed to send message to tab:', error);
+      // Return a more specific error message
+      if (error instanceof Error && error.message.includes('timeout')) {
+        throw new Error('Request timed out - content script may not be responding');
+      } else if (error instanceof Error && error.message.includes('Receiving end does not exist')) {
+        throw new Error('Content script not found - please refresh the page');
+      }
       throw error;
     }
   }
@@ -78,10 +91,21 @@ export class ChromeApiWrapper {
     }
 
     try {
+      // First check if content script is already injected
+      try {
+        await chrome.tabs.sendMessage(tabId, { action: 'ping' });
+        console.log('Content script already injected');
+        return; // Already injected
+      } catch {
+        // Content script not found, proceed with injection
+      }
+
       await chrome.scripting.executeScript({
         target: { tabId },
         files: ['content.js']
       });
+      
+      console.log('Content script injected successfully');
     } catch (error) {
       console.error('Failed to inject content script:', error);
       throw error;

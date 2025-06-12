@@ -19,7 +19,7 @@ const GoldenCallTab: React.FC<GoldenCallTabProps> = ({
   //   const result = await GoldenCallService.getGoldenCall(goldenId);
   //   if (result) {
   //     console.log('Golden call data:', result);
-  //   }
+  //   }hbt
   // };
 
   return (

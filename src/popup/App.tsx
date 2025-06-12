@@ -14,7 +14,6 @@ const App: React.FC = () => {
     selectedValue: '',
     filteredOptions: [],
     highlightedIndex: -1,
-    currentMode: 'normal',
     activeTab: 'goldencall',
     isAutoPopulating: false,
   });
@@ -88,6 +87,7 @@ const App: React.FC = () => {
     try {
       const tab = await ChromeApiWrapper.queryActiveTab();
       if (tab?.id && tab?.url && isValidDomainForGolden(tab.url)) {
+        console.log('Auto-populating Golden Call for tab:', tab.id);  
         await ChromeApiWrapper.injectContentScript(tab.id);
         
         const response = await ChromeApiWrapper.sendMessage(tab.id, { action: 'getGolden' });
@@ -195,25 +195,6 @@ const App: React.FC = () => {
     }
   };
 
-  const handleConfigReset = async () => {
-    try {
-      await ConfigManager.clearConfig();
-      await setupOptions();
-      showStatus('Configuration reset to defaults', 'success');
-    } catch (error) {
-      console.error('Failed to reset config:', error);
-      showStatus('Failed to reset configuration', 'error');
-    }
-  };
-
-  const handleModeChange = (mode: 'normal' | 'logs') => {
-    setState((prev: PopupState) => ({ ...prev, currentMode: mode }));
-  };
-
-  const handleLogOptionSelect = (searchTerm: string) => {
-    setState((prev: PopupState) => ({ ...prev, selectedValue: searchTerm }));
-  };
-
   const handleGetGolden = async () => {
     if (!goldenId.trim()) return;
 
@@ -221,6 +202,10 @@ const App: React.FC = () => {
       const tab = await ChromeApiWrapper.queryActiveTab();
       if (tab?.id) {
         await injectContentScript(tab.id);
+        
+        // Add a small delay to ensure content script is loaded
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         const response = await ChromeApiWrapper.sendMessage(tab.id, {
           action: 'getGolden',
           goldenId: goldenId
@@ -229,12 +214,15 @@ const App: React.FC = () => {
         if (response?.success) {
           showStatus('Golden call executed', 'success');
         } else {
-          showStatus('Golden call failed', 'error');
+          showStatus(response?.error || 'Golden call failed', 'error');
         }
+      } else {
+        showStatus('No active tab found', 'error');
       }
     } catch (error) {
       console.error('Get golden failed:', error);
-      showStatus('Golden call failed', 'error');
+      const errorMessage = error instanceof Error ? error.message : 'Golden call failed';
+      showStatus(errorMessage, 'error');
     }
   };
 
@@ -255,16 +243,11 @@ const App: React.FC = () => {
             selectedValue={state.selectedValue}
             filteredOptions={state.filteredOptions}
             highlightedIndex={state.highlightedIndex}
-            currentMode={state.currentMode}
             configStatus={configStatus}
             onInputChange={handleInputChange}
             onOptionSelect={handleOptionSelect}
             onSearch={handleSearch}
             onClear={handleClear}
-            onConfigLoad={handleConfigLoad}
-            onConfigReset={handleConfigReset}
-            onModeChange={handleModeChange}
-            onLogOptionSelect={handleLogOptionSelect}
           />
         )}
         
