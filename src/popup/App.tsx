@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { SearchOption, PopupState } from '@/types';
 import { ConfigManager, isValidDomainForGolden, isValidDomainForSearch } from '@/utils/config';
-import { ChromeApiWrapper, isExtensionContext } from '@/utils/chromeApiWrapper';
+import { ChromeApiWrapper } from '@/utils/chromeApiWrapper';
 import SearchTab from './components/SearchTab';
 import GoldenCallTab from './components/GoldenCallTab';
+import ConfigurationTab from './components/ConfigurationTab';
 import TabNavigation from './components/TabNavigation';
 import StatusMessage from './components/StatusMessage';
 import './App.css';
@@ -64,7 +65,7 @@ const App: React.FC = () => {
         const isGoldenDomain = isValidDomainForGolden(tab.url);
         const isSearchDomain = isValidDomainForSearch(tab.url);
         
-        let newActiveTab: 'search' | 'goldencall' = 'goldencall';
+        let newActiveTab: 'search' | 'goldencall' | 'configuration' = 'goldencall';
         
         if (isSearchDomain && !isGoldenDomain) {
           newActiveTab = 'search';
@@ -111,7 +112,7 @@ const App: React.FC = () => {
     }
   };
 
-  const handleTabChange = (tabName: 'search' | 'goldencall') => {
+  const handleTabChange = (tabName: 'search' | 'goldencall' | 'configuration') => {
     setState((prev: PopupState) => ({ ...prev, activeTab: tabName }));
   };
 
@@ -273,6 +274,13 @@ const App: React.FC = () => {
             onGoldenIdChange={setGoldenId}
             onGetGolden={handleGetGolden}
             isAutoPopulating={state.isAutoPopulating}
+          />
+        )}
+        
+        {state.activeTab === 'configuration' && (
+          <ConfigurationTab
+            onConfigLoad={handleConfigLoad}
+            configStatus={configStatus}
           />
         )}
       </div>

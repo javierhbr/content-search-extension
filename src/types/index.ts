@@ -37,7 +37,7 @@ export interface PopupState {
   filteredOptions: SearchOption[];
   highlightedIndex: number;
   currentMode: 'normal' | 'logs';
-  activeTab: 'search' | 'goldencall';
+  activeTab: 'search' | 'goldencall' | 'configuration';
   isAutoPopulating: boolean;
 }
 

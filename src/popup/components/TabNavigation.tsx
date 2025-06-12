@@ -1,8 +1,8 @@
 import React from 'react';
 
 interface TabNavigationProps {
-  activeTab: 'search' | 'goldencall';
-  onTabChange: (tab: 'search' | 'goldencall') => void;
+  activeTab: 'search' | 'goldencall' | 'configuration';
+  onTabChange: (tab: 'search' | 'goldencall' | 'configuration') => void;
 }
 
 const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange }) => {
@@ -33,6 +33,16 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange })
           id="search-tab"
         >
           Search
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'configuration' ? 'active' : ''}`}
+          onClick={() => onTabChange('configuration')}
+          role="tab"
+          aria-selected={activeTab === 'configuration'}
+          aria-controls="configurationTab"
+          id="configuration-tab"
+        >
+          ⚙️
         </button>
       </div>
     </div>
