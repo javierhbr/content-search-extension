@@ -239,11 +239,9 @@ const App: React.FC = () => {
 
   return (
     <div className="container">
-      {!isExtensionContext() && (
         <div className="web-dev-indicator">
-          🌐 Web Development Mode
+          EVA OCP Dev Tool
         </div>
-      )}
       
       <TabNavigation 
         activeTab={state.activeTab} 
