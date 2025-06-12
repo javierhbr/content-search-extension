@@ -212,10 +212,15 @@ class ContentSearcher {
 
   public getGoldenIdValue(): string | null {
     try {
-      const url = window.location.href;
-      const usernameMatch = url.match(/github\.com\/([^/]+)/);
-      if (usernameMatch) {
-        return usernameMatch[1];
+      // Look for the specific span element with GitHub username
+      const usernameElement = document.querySelector('span.p-nickname.vcard-username.d-block[itemprop="additionalName"]');
+      
+      if (usernameElement && usernameElement.textContent) {
+        // Extract and clean the text content
+        const username = usernameElement.textContent.trim();
+        if (username) {
+          return username;
+        }
       }
       return null;
     } catch (error) {

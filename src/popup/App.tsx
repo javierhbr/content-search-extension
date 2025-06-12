@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SearchOption, PopupState } from '@/types';
-import { ConfigManager, isValidDomainForGolden, isValidDomainForSearch } from '@/utils/config';
+import { ConfigManager, isValidDomainForGolden, determineActiveTab } from '@/utils/config';
 import { ChromeApiWrapper } from '@/utils/chromeApiWrapper';
 import SearchTab from './components/SearchTab';
 import GoldenCallTab from './components/GoldenCallTab';
@@ -14,7 +14,7 @@ const App: React.FC = () => {
     selectedValue: '',
     filteredOptions: [],
     highlightedIndex: -1,
-    activeTab: 'goldencall',
+    activeTab: 'configuration', // Changed default to configuration
     isAutoPopulating: false,
   });
 
@@ -33,17 +33,19 @@ const App: React.FC = () => {
   const initializePopup = async () => {
     try {
       await setupOptions();
-      await determineActiveTab();
-      
-      // Auto-populate Golden Call input if Golden tab is active by default
-      if (state.activeTab === 'goldencall') {
-        await autoPopulateGoldenCall();
-      }
+      await determineActiveTabForPopup();
     } catch (error) {
       console.error('Failed to initialize popup:', error);
       showStatus('Failed to initialize extension', 'error');
     }
   };
+
+  // Auto-populate Golden Call when tab becomes active
+  useEffect(() => {
+    if (state.activeTab === 'goldencall') {
+      autoPopulateGoldenCall();
+    }
+  }, [state.activeTab]);
 
   const setupOptions = async () => {
     try {
@@ -57,25 +59,14 @@ const App: React.FC = () => {
     }
   };
 
-  const determineActiveTab = async (): Promise<void> => {
+  const determineActiveTabForPopup = async (): Promise<void> => {
     try {
-      const tab = await ChromeApiWrapper.queryActiveTab();
-      if (tab?.url) {
-        const isGoldenDomain = isValidDomainForGolden(tab.url);
-        const isSearchDomain = isValidDomainForSearch(tab.url);
-        
-        let newActiveTab: 'search' | 'goldencall' | 'configuration' = 'goldencall';
-        
-        if (isSearchDomain && !isGoldenDomain) {
-          newActiveTab = 'search';
-        } else if (isGoldenDomain) {
-          newActiveTab = 'goldencall';
-        }
-        
-        setState((prev: PopupState) => ({ ...prev, activeTab: newActiveTab }));
-      }
+      const newActiveTab = await determineActiveTab();
+      setState((prev: PopupState) => ({ ...prev, activeTab: newActiveTab }));
     } catch (error) {
       console.error('Failed to determine active tab:', error);
+      // Fallback to configuration tab on error
+      setState((prev: PopupState) => ({ ...prev, activeTab: 'configuration' }));
     }
   };
 

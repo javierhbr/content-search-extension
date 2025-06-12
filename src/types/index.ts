@@ -6,6 +6,10 @@ export interface SearchOption {
 export interface Config {
   options: SearchOption[];
   version?: string;
+  tabConfig?: {
+    defaultTab: 'search' | 'goldencall' | 'configuration';
+    autoSwitchTabs: boolean;
+  };
 }
 
 export interface SearchRequest {
