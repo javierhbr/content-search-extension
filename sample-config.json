@@ -1,9 +1,0 @@
-[
-  { "label": "newLabel", "searchValue": "newSearchValue" },
-  { "label": "envMode", "searchValue": "envMode" },
-  { "label": "featureFlags - Output field params parsed", "searchValue": "Output field params parsed" },
-  { "label": "keyValuePairs", "searchValue": "New KVP log" },
-  { "label": "ws-request", "searchValue": "Api Request builder" },
-  { "label": "ws-response-fields", "searchValue": "Output field params parsed" },
-  { "label": "ws-response-WsResponseDto", "searchValue": "WsResponseDto" }
-]
