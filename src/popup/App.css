@@ -25,6 +25,24 @@
   padding: 0;
 }
 
+/* Chrome Extension Popup Size */
+html, body {
+  width: 400px;
+  height: 375px;
+  min-width: 400px;
+  min-height: 375px;
+  max-width: 400px;
+  max-height: 375px;
+  overflow: hidden;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Web Development Mode Indicator */
 .web-dev-indicator {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -66,12 +84,14 @@ body {
 
 /* Container */
 .container {
-  width: 400px;
-  min-height: 300px;
+  width: 100%;
+  height: 100%;
   background: var(--background-color);
   border-radius: var(--border-radius);
   overflow: hidden;
   box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
 }
 
 /* Tab Navigation */
@@ -135,6 +155,10 @@ body {
 /* Tab Content */
 .tab-content {
   padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .tab-pane {
